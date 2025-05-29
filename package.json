@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "cargo": "cargo +nightly -Z unstable-options -C src-tauri"
   },
   "license": "GPL-3.0-or-later",
   "dependencies": {

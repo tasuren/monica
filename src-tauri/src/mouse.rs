@@ -43,11 +43,7 @@ pub fn setup_mouse_event_listener(app: tauri::AppHandle) -> Result<()> {
         let is_mouse_down = Arc::clone(&is_mouse_down);
 
         move |(x, y)| {
-            if !is_mouse_down.load(Ordering::SeqCst) {
-                return;
-            }
-
-            app.emit("mouse-move", (x, y))
+            app.emit("mouse-move", (x, y, is_mouse_down.load(Ordering::SeqCst)))
                 .expect("Failed to emit mouse move event");
         }
     });

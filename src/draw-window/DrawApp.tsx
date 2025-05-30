@@ -1,32 +1,48 @@
 import { listen } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { createEffect, onCleanup } from "solid-js";
-import { Canvas } from "./canvas";
 import "./DrawApp.css";
+import { GlobalStateProvider, useTool } from "./GlobalState";
+import { Tooltip } from "./components/Tooltip";
+import { Canvas } from "./lib/canvas";
+import { ToolController } from "./lib/tool-controller";
 
-function DrawApp() {
-    let canvas: Canvas | undefined = undefined;
+function CanvasArea() {
+    let canvas!: Canvas;
+    const [tool, _] = useTool();
+
+    createEffect(() => {
+        const window = getCurrentWindow();
+
+        if (tool() === "cursor") {
+            window.setIgnoreCursorEvents(true);
+        } else {
+            window.setIgnoreCursorEvents(false);
+        }
+    });
 
     createEffect(async () => {
+        const tools = new ToolController(canvas, tool);
+
         const unListenMouseDown = await listen("mouse-down", (event) => {
-            if (!canvas) return;
+            const [x, y, _] = event.payload as [number, number, boolean];
 
-            const [x, y] = event.payload as [number, number];
-
-            canvas.pen.down();
-            canvas.pen.paint(x, y);
+            tools.onMouseDown(x, y);
         });
 
         const unListenMouseMove = await listen("mouse-move", (event) => {
-            if (!canvas) return;
+            const [x, y, isMouseDown] = event.payload as [
+                number,
+                number,
+                boolean,
+            ];
 
-            const [x, y] = event.payload as [number, number];
-            canvas.pen.paint(x, y);
+            if (!isMouseDown) return;
+            tools.onMouseMoveWithDown(x, y);
         });
 
         const unListenMouseUp = await listen("mouse-up", () => {
-            if (!canvas) return;
-
-            canvas.pen.up();
+            tools.onMouseUp();
         });
 
         onCleanup(() => {
@@ -46,6 +62,15 @@ function DrawApp() {
                 canvas = new Canvas(element);
             }}
         />
+    );
+}
+
+function DrawApp() {
+    return (
+        <GlobalStateProvider>
+            <Tooltip />
+            <CanvasArea />
+        </GlobalStateProvider>
     );
 }
 

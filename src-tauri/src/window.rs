@@ -41,6 +41,7 @@ pub fn setup_windows(app: &mut tauri::App) {
         .inner_size(width, height)
         .position(x, y)
         .always_on_top(true)
+        .resizable(false)
         .build()
         .expect("Failed to create window");
 

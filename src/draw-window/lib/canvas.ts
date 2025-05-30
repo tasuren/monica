@@ -1,3 +1,6 @@
+export const TOOLS = ["cursor", "pen", "eraser"] as const;
+export type Tool = (typeof TOOLS)[number];
+
 class Pen {
     private beforePainted: [number, number] | undefined = undefined;
 
@@ -8,6 +11,7 @@ class Pen {
     ) {}
 
     down() {
+        this.ctx.globalCompositeOperation = "source-over";
         this.ctx.fillStyle = this.color;
     }
 
@@ -64,17 +68,21 @@ class Eraser {
     up() {
         this.beforeErased = undefined;
         this.ctx.globalCompositeOperation = "source-over";
+        console.log(1, this.ctx.globalCompositeOperation);
     }
 }
 
 export class Canvas {
     private readonly ctx: CanvasRenderingContext2D;
+
     public readonly pen: Pen;
+    public readonly eraser: Eraser;
 
     constructor(canvas: HTMLCanvasElement) {
         this.ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
         this.pen = new Pen(this.ctx);
+        this.eraser = new Eraser(this.ctx);
     }
 
     getContext(): CanvasRenderingContext2D {

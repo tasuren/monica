@@ -7,19 +7,42 @@ function DrawApp() {
     let canvas: Canvas | undefined = undefined;
 
     createEffect(async () => {
-        const unListen = await listen("mouse-drag", (event) => {
+        const unListenMouseDown = await listen("mouse-down", (event) => {
             if (!canvas) return;
-            const { x, y } = event.payload as { x: number; y: number };
-            canvas.paint(x, y, { color: "black" });
+
+            const [x, y] = event.payload as [number, number];
+
+            canvas.pen.down();
+            canvas.pen.paint(x, y);
         });
 
-        onCleanup(unListen);
+        const unListenMouseMove = await listen("mouse-move", (event) => {
+            if (!canvas) return;
+
+            const [x, y] = event.payload as [number, number];
+            canvas.pen.paint(x, y);
+        });
+
+        const unListenMouseUp = await listen("mouse-up", () => {
+            if (!canvas) return;
+
+            canvas.pen.up();
+        });
+
+        onCleanup(() => {
+            unListenMouseDown();
+            unListenMouseMove();
+            unListenMouseUp();
+        });
     });
 
     return (
         <canvas
             class="w-screen h-screen"
             ref={(element) => {
+                element.width = window.innerWidth;
+                element.height = window.innerHeight;
+
                 canvas = new Canvas(element);
             }}
         />

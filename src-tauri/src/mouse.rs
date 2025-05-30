@@ -4,7 +4,7 @@ use std::{
 };
 
 use anyhow::{Context as _, Result};
-use device_query::{DeviceEvents, DeviceEventsHandler, DeviceQuery, DeviceState};
+use device_query::{device_state, DeviceEvents, DeviceEventsHandler, DeviceQuery, DeviceState};
 use tauri::Emitter;
 
 pub fn setup_mouse_event_listener(app: tauri::AppHandle) -> Result<()> {
@@ -28,9 +28,14 @@ pub fn setup_mouse_event_listener(app: tauri::AppHandle) -> Result<()> {
 
     let on_mouse_up = device_events_handler.on_mouse_up({
         let is_mouse_down = Arc::clone(&is_mouse_down);
+        let device_state = DeviceState::new();
+        let app = app.clone();
 
         move |_| {
             is_mouse_down.store(false, Ordering::SeqCst);
+
+            app.emit("mouse-up", device_state.get_mouse().coords)
+                .expect("Failed to emit mouse up event");
         }
     });
 
@@ -42,8 +47,8 @@ pub fn setup_mouse_event_listener(app: tauri::AppHandle) -> Result<()> {
                 return;
             }
 
-            app.emit("mouse-down", (x, y))
-                .expect("Failed to emit mouse drag event");
+            app.emit("mouse-move", (x, y))
+                .expect("Failed to emit mouse move event");
         }
     });
 

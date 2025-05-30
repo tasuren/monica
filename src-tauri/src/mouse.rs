@@ -4,7 +4,7 @@ use std::{
 };
 
 use anyhow::{Context as _, Result};
-use device_query::{device_state, DeviceEvents, DeviceEventsHandler, DeviceQuery, DeviceState};
+use device_query::{DeviceEvents, DeviceEventsHandler, DeviceQuery, DeviceState};
 use tauri::Emitter;
 
 pub fn setup_mouse_event_listener(app: tauri::AppHandle) -> Result<()> {

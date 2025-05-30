@@ -33,6 +33,40 @@ class Pen {
     }
 }
 
+class Eraser {
+    private beforeErased: [number, number] | undefined = undefined;
+
+    constructor(
+        private readonly ctx: CanvasRenderingContext2D,
+        public size = 10,
+    ) {}
+
+    down() {
+        this.ctx.globalCompositeOperation = "destination-out";
+    }
+
+    erase(x: number, y: number) {
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, this.size / 2, 0, 2 * Math.PI);
+        this.ctx.fill();
+
+        if (this.beforeErased) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.beforeErased[0], this.beforeErased[1]);
+            this.ctx.lineTo(x, y);
+            this.ctx.lineWidth = this.size;
+            this.ctx.stroke();
+        }
+
+        this.beforeErased = [x, y];
+    }
+
+    up() {
+        this.beforeErased = undefined;
+        this.ctx.globalCompositeOperation = "source-over";
+    }
+}
+
 export class Canvas {
     private readonly ctx: CanvasRenderingContext2D;
     public readonly pen: Pen;

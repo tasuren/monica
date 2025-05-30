@@ -3,13 +3,13 @@ import DrawApp from "./draw-window/DrawApp";
 import HomeApp from "./home-window/HomeApp";
 
 function App() {
-  const isDrawWindow = getCurrentWindow().label.startsWith("draw-window");
+    const isMainWindow = getCurrentWindow().label === "main";
 
-  if (isDrawWindow) {
+    if (isMainWindow) {
+        return <HomeApp />;
+    }
+
     return <DrawApp />;
-  }
-
-  return <HomeApp />;
 }
 
 export default App;

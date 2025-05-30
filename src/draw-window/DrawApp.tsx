@@ -54,7 +54,7 @@ function CanvasArea() {
 
     return (
         <canvas
-            class="w-screen h-screen"
+            class="w-screen h-screen cursor-crosshair"
             ref={(element) => {
                 element.width = window.innerWidth;
                 element.height = window.innerHeight;

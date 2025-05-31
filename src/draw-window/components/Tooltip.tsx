@@ -1,9 +1,11 @@
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { register, unregister } from "@tauri-apps/plugin-global-shortcut";
 import Eraser from "lucide-solid/icons/eraser";
 import Grip from "lucide-solid/icons/grip";
 import MousePointer2 from "lucide-solid/icons/mouse-pointer-2";
 import Pencil from "lucide-solid/icons/pencil";
+import Trash2 from "lucide-solid/icons/trash-2";
 import {
     type ParentProps,
     createEffect,
@@ -11,10 +13,25 @@ import {
     onCleanup,
 } from "solid-js";
 import { cl } from "../../utils";
-import { useTool } from "../GlobalState";
+import { useCanvas, useTool } from "../GlobalState";
 import type { Tool } from "../lib/canvas";
 
-function ToolButton(props: ParentProps<{ tool: Tool }>) {
+function ToolButton(props: ParentProps<{ tool: Tool; shortcutKey?: string }>) {
+    const onClick = () => setTool(props.tool);
+
+    if (props.shortcutKey) {
+        const shortcutKey = props.shortcutKey as string;
+
+        createEffect(async () => {
+            if (tool() === props.tool) await unregister(shortcutKey);
+            else await register(shortcutKey, onClick);
+
+            onCleanup(async () => {
+                await unregister(shortcutKey);
+            });
+        });
+    }
+
     const [tool, setTool] = useTool();
 
     return (
@@ -26,7 +43,7 @@ function ToolButton(props: ParentProps<{ tool: Tool }>) {
                 "p-2",
                 tool() === props.tool && "bg-white/40",
             )}
-            onClick={() => setTool(props.tool)}
+            onClick={onClick}
         >
             {props.children}
         </button>
@@ -81,7 +98,7 @@ export function Tooltip() {
     return (
         <div
             class={cl(
-                "rounded-xl",
+                "rounded-lg",
                 "border border-white/40 bg-black/80",
                 "p-4",
                 "flex flex-col gap-2",
@@ -93,21 +110,39 @@ export function Tooltip() {
             }}
             ref={tooltipElement}
         >
-            <ToolButton tool="cursor">
+            <ToolButton tool="cursor" shortcutKey="Escape">
                 <MousePointer2 color="white" />
             </ToolButton>
+
             <ToolButton tool="pen">
                 <Pencil color="white" />
             </ToolButton>
+
             <ToolButton tool="eraser">
                 <Eraser color="white" />
             </ToolButton>
+
+            <ResetButton />
 
             <TooltipGrip
                 tooltipRect={rect}
                 setPosition={(x, y) => setPosition({ x, y })}
             />
         </div>
+    );
+}
+
+function ResetButton() {
+    const [canvas] = useCanvas();
+
+    return (
+        <button
+            type="button"
+            class="flex justify-center p-2"
+            onClick={() => canvas().reset()}
+        >
+            <Trash2 color="white" />
+        </button>
     );
 }
 

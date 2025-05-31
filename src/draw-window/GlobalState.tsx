@@ -4,20 +4,37 @@ import {
     createSignal,
     useContext,
 } from "solid-js";
-import type { Tool } from "./lib/canvas";
+import type { Canvas, Tool } from "./lib/canvas";
 
 export interface GlobalState {
     tool(): Tool;
     setTool(tool: Tool): void;
+    canvas(): Canvas;
+    setCanvas(canvas: Canvas): void;
 }
 
 export const GlobalStateContext = createContext<GlobalState>();
 
 export function GlobalStateProvider(props: ParentProps) {
     const [tool, setTool] = createSignal<Tool>("cursor");
+    const [canvas, setCanvas] = createSignal<Canvas>();
 
     return (
-        <GlobalStateContext.Provider value={{ tool, setTool }}>
+        <GlobalStateContext.Provider
+            value={{
+                tool,
+                setTool,
+                canvas() {
+                    const maybeCanvas = canvas();
+
+                    if (!maybeCanvas)
+                        throw new Error("`Canvas` is not set yet.");
+
+                    return maybeCanvas;
+                },
+                setCanvas,
+            }}
+        >
             {props.children}
         </GlobalStateContext.Provider>
     );
@@ -33,4 +50,9 @@ export function useGlobalState(): GlobalState {
 export function useTool() {
     const state = useGlobalState();
     return [state.tool, state.setTool] as const;
+}
+
+export function useCanvas() {
+    const state = useGlobalState();
+    return [state.canvas, state.setCanvas] as const;
 }

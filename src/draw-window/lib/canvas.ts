@@ -88,4 +88,10 @@ export class Canvas {
     getContext(): CanvasRenderingContext2D {
         return this.ctx;
     }
+
+    reset() {
+        this.ctx.globalCompositeOperation = "destination-out";
+        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        this.ctx.globalCompositeOperation = "source-over";
+    }
 }

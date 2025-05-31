@@ -13,7 +13,7 @@ import {
     onCleanup,
 } from "solid-js";
 import { cl } from "../../utils";
-import { useCanvas, useTool } from "../GlobalState";
+import { useCanvas, useLock, useTool } from "../GlobalState";
 import type { Tool } from "../lib/canvas";
 
 function ToolButton(props: ParentProps<{ tool: Tool; shortcutKey?: string }>) {
@@ -151,6 +151,7 @@ function TooltipGrip(props: {
     setPosition: (x: number, y: number) => void;
 }) {
     const { tooltipRect, setPosition } = props;
+    const [_, setLock] = useLock();
 
     let relativePosition: { x: number; y: number } | undefined = undefined;
     let position = { x: 0, y: 0 };
@@ -159,6 +160,9 @@ function TooltipGrip(props: {
         const rect = tooltipRect();
         if (!rect) return;
 
+        // Lock the canvas to prevent drawing while dragging the tooltip.
+        setLock(true);
+
         relativePosition = {
             x: position.x - rect.left,
             y: position.y - rect.top,
@@ -166,6 +170,8 @@ function TooltipGrip(props: {
     };
     const onMouseUp = () => {
         relativePosition = undefined;
+
+        setLock(false);
     };
 
     createEffect(async () => {

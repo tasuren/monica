@@ -11,6 +11,8 @@ export interface GlobalState {
     setTool(tool: Tool): void;
     canvas(): Canvas;
     setCanvas(canvas: Canvas): void;
+    lock(): boolean;
+    setLock(lock: boolean): void;
 }
 
 export const GlobalStateContext = createContext<GlobalState>();
@@ -18,6 +20,7 @@ export const GlobalStateContext = createContext<GlobalState>();
 export function GlobalStateProvider(props: ParentProps) {
     const [tool, setTool] = createSignal<Tool>("cursor");
     const [canvas, setCanvas] = createSignal<Canvas>();
+    const [lock, setLock] = createSignal(false);
 
     return (
         <GlobalStateContext.Provider
@@ -33,6 +36,8 @@ export function GlobalStateProvider(props: ParentProps) {
                     return maybeCanvas;
                 },
                 setCanvas,
+                lock,
+                setLock,
             }}
         >
             {props.children}
@@ -55,4 +60,9 @@ export function useTool() {
 export function useCanvas() {
     const state = useGlobalState();
     return [state.canvas, state.setCanvas] as const;
+}
+
+export function useLock() {
+    const state = useGlobalState();
+    return [state.lock, state.setLock] as const;
 }

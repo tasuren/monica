@@ -1,7 +1,7 @@
 import { type Window, getAllWindows } from "@tauri-apps/api/window";
 import { setupMouseEventHandler } from "../../common/mouse";
 import type { ToolKind } from "../../common/tool";
-import {isInsideRect, getWindowPosition, getWindowSize } from "./window-rect-utils";
+import { getWindowPosition, getWindowSize, isInsideRect } from "./window-rect-utils";
 import { WindowRectTracker, WindowState } from "./window-state";
 
 async function setupWindowDraggingCanvasLock(setLock: (lock: boolean) => void) {
@@ -56,13 +56,11 @@ async function setupWindowFocus(
             setLock(true);
 
             state.window.setFocus();
-            console.log(state.window.label, "focus");
         } else if (lock()) {
             setLock(false);
 
             const window = await getCurrentDrawingWindow(x, y);
             window.setFocus();
-            console.log(window.label, "focus");
         }
     };
 

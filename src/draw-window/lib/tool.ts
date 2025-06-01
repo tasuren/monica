@@ -24,7 +24,7 @@ export class Pen extends Tool {
     constructor(
         private readonly ctx: CanvasRenderingContext2D,
         public color = "blue",
-        public size = 10,
+        public size = 3,
     ) {
         super();
     }
@@ -63,7 +63,7 @@ export class Eraser extends Tool {
 
     constructor(
         private readonly ctx: CanvasRenderingContext2D,
-        public size = 10,
+        public size = 30,
     ) {
         super();
     }

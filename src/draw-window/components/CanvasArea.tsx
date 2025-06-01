@@ -1,7 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { createEffect, createSignal, onCleanup, onMount } from "solid-js";
-import { useCanvas, useTool } from "../CanvasController";
+import { createEffect, onCleanup, onMount } from "solid-js";
+import { useCanvas, useLock, useTool } from "../CanvasController";
 import { Canvas } from "../lib/canvas";
 
 export function CanvasArea() {
@@ -20,7 +20,7 @@ export function CanvasArea() {
     createEffect(() => {
         const window = getCurrentWindow();
 
-        if (tool().kind === "cursor") {
+        if (tool().kind === "cursor" || lock()) {
             window.setIgnoreCursorEvents(true);
             canvasElement.classList.remove("cursor-crosshair");
         } else {
@@ -32,7 +32,7 @@ export function CanvasArea() {
 
     // Tool control
     const [tool] = useTool();
-    const [lock] = createSignal(false);
+    const [lock] = useLock();
 
     createEffect(async () => {
         const unListenMouseDown = await listen("mouse-down", (event) => {

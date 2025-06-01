@@ -8,4 +8,8 @@ export class CanvasHandle {
     async setTool(tool: string) {
         await emit("canvas-set-tool", tool);
     }
+
+    async setLock(lock: boolean) {
+        await emit("canvas-set-lock", lock);
+    }
 }

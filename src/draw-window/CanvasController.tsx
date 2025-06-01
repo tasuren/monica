@@ -13,6 +13,8 @@ import { Cursor, type Tool } from "./lib/tool";
 export interface CanvasController {
     tool(): Tool;
     setTool(tool: Tool): void;
+    lock(): boolean;
+    setLock(lock: boolean): void;
     canvas(): Canvas;
     setCanvas(canvas: Canvas): void;
 }
@@ -21,6 +23,7 @@ export const CanvasControllerContext = createContext<CanvasController>();
 
 export function CanvasControllerProvider(props: ParentProps) {
     const [tool, setTool] = createSignal<Tool>(new Cursor());
+    const [lock, setLock] = createSignal(false);
     const [canvas, setCanvas] = createSignal<Canvas>();
 
     // Tool state initialization
@@ -40,8 +43,13 @@ export function CanvasControllerProvider(props: ParentProps) {
         const canvas_ = canvas();
         if (!canvas_) return;
 
-        const cleanup = await setupEventHandler(canvas_, (toolKind) => {
-            setTool(canvas_.getTool(toolKind));
+        const cleanup = await setupEventHandler(canvas_, {
+            setTool: (toolKind) => {
+                setTool(canvas_.getTool(toolKind));
+            },
+            setLock: (lock) => {
+                setLock(lock);
+            },
         });
 
         onCleanup(() => cleanup());
@@ -52,6 +60,8 @@ export function CanvasControllerProvider(props: ParentProps) {
             value={{
                 tool,
                 setTool,
+                lock,
+                setLock,
                 canvas() {
                     const currentCanvas = canvas();
                     if (!currentCanvas)
@@ -81,4 +91,9 @@ export function useTool() {
 export function useCanvas() {
     const state = useCanvasController();
     return [state.canvas, state.setCanvas] as const;
+}
+
+export function useLock() {
+    const state = useCanvasController();
+    return [state.lock, state.setLock] as const;
 }

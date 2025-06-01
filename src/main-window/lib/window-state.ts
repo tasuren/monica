@@ -13,18 +13,8 @@ import {
 
 export class WindowState {
     public readonly window: Window = getCurrentWindow();
-    private scaleFactor: number | undefined = undefined;
-    private dragging = false;
 
     constructor(private readonly rectTracker: WindowRectTracker) {}
-
-    async getScaleFactor() {
-        if (this.scaleFactor === undefined) {
-            this.scaleFactor = await this.window.scaleFactor();
-        }
-
-        return this.scaleFactor;
-    }
 
     async getPosition() {
         return await this.rectTracker.getPosition();
@@ -32,18 +22,6 @@ export class WindowState {
 
     async getSize() {
         return await this.rectTracker.getSize();
-    }
-
-    startDragging() {
-        this.dragging = true;
-    }
-
-    stopDragging() {
-        this.dragging = false;
-    }
-
-    isDragging(): boolean {
-        return this.dragging;
     }
 
     async isInside(mousePosition?: { x: number; y: number }): Promise<boolean> {

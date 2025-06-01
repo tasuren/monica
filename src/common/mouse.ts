@@ -9,22 +9,34 @@ export interface MouseEventHandler {
 export async function setupMouseEventHandler(
     handler: MouseEventHandler,
 ): Promise<() => void> {
-    const unListenMouseDown = await listen("mouse-down", (_event) => {
-        if (handler.onMouseDown) {
-            handler.onMouseDown();
-        }
-    });
-    const unListenMouseMove = await listen("mouse-move", (event) => {
-        if (!handler.onMouseMove) return;
+    let unListenMouseDown = () => {};
+    let unListenMouseMove = () => {};
+    let unListenMouseUp = () => {};
 
-        const [x, y] = event.payload as [number, number];
-        handler.onMouseMove(x, y);
-    });
-    const unListenMouseUp = await listen("mouse-up", () => {
-        if (handler.onMouseUp) {
+    if (handler.onMouseDown) {
+        unListenMouseDown = await listen("mouse-down", (_event) => {
+            if (!handler.onMouseDown) return;
+
+            handler.onMouseDown();
+        });
+    }
+
+    if (handler.onMouseMove) {
+        unListenMouseMove = await listen("mouse-move", (event) => {
+            if (!handler.onMouseMove) return;
+
+            const [x, y] = event.payload as [number, number];
+            handler.onMouseMove(x, y);
+        });
+    }
+
+    if (handler.onMouseUp) {
+        unListenMouseUp = await listen("mouse-up", () => {
+            if (!handler.onMouseUp) return;
+
             handler.onMouseUp();
-        }
-    });
+        });
+    }
 
     return () => {
         unListenMouseDown();

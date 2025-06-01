@@ -1,4 +1,4 @@
-use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::{Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 
 #[cfg(target_os = "macos")]
 mod macos {
@@ -28,7 +28,7 @@ mod macos {
     }
 }
 
-pub fn setup_windows(app: &mut tauri::App) {
+pub fn setup_windows(app: &mut tauri::App) -> WebviewWindow {
     // Main window
     let window = app.get_webview_window("main").unwrap();
     window
@@ -80,6 +80,8 @@ pub fn setup_windows(app: &mut tauri::App) {
             window.open_devtools();
         }
     }
+
+    window
 }
 
 #[cfg(debug_assertions)]

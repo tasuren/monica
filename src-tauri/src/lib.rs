@@ -4,8 +4,8 @@ mod mouse;
 mod window;
 
 fn setup(app: &mut tauri::App) {
-    window::setup_windows(app);
-    mouse::setup_mouse_event_listener(app.app_handle().clone()).unwrap();
+    let main_window = window::setup_windows(app);
+    mouse::setup_mouse_event_listener(app.app_handle().clone(), &main_window).unwrap();
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

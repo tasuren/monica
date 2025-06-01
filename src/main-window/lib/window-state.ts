@@ -5,8 +5,11 @@ import {
     getCurrentWindow,
 } from "@tauri-apps/api/window";
 import { getMousePosition } from "../../common/commands";
-import { isInsideRect } from "../../common/utils";
-import { getWindowPosition, getWindowSize } from "./window-size";
+import {
+    getWindowPosition,
+    getWindowSize,
+    isInsideRect,
+} from "./window-rect-utils";
 
 export class WindowState {
     public readonly window: Window = getCurrentWindow();

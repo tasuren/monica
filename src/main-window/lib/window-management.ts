@@ -1,8 +1,7 @@
 import { type Window, getAllWindows } from "@tauri-apps/api/window";
 import { setupMouseEventHandler } from "../../common/mouse";
 import type { ToolKind } from "../../common/tool";
-import { isInsideRect } from "../../common/utils";
-import { getWindowPosition, getWindowSize } from "./window-size";
+import {isInsideRect, getWindowPosition, getWindowSize } from "./window-rect-utils";
 import { WindowRectTracker, WindowState } from "./window-state";
 
 async function setupWindowDraggingCanvasLock(setLock: (lock: boolean) => void) {

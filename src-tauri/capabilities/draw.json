@@ -8,6 +8,8 @@
         "core:event:allow-listen",
         "core:event:allow-unlisten",
         "core:window:allow-set-ignore-cursor-events",
-        "core:window:allow-set-focus"
+        "core:window:allow-set-focus",
+        "core:window:allow-is-focused",
+        "core:window:allow-set-cursor-icon"
     ]
 }

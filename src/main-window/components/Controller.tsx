@@ -14,7 +14,7 @@ import {
     onCleanup,
 } from "solid-js";
 import type { ToolKind } from "../../common/tool";
-import { cl } from "../../utils";
+import { cl } from "../../common/utils";
 import { useCanvas, useTool } from "../CanvasState";
 
 export function Controller() {

@@ -15,7 +15,7 @@ export interface CanvasController {
     setTool(tool: Tool): void;
     lock(): boolean;
     setLock(lock: boolean): void;
-    canvas(): Canvas;
+    canvas(): Canvas | undefined;
     setCanvas(canvas: Canvas): void;
 }
 
@@ -62,12 +62,7 @@ export function CanvasControllerProvider(props: ParentProps) {
                 setTool,
                 lock,
                 setLock,
-                canvas() {
-                    const currentCanvas = canvas();
-                    if (!currentCanvas)
-                        throw new Error("Canvas is not initialized.");
-                    return currentCanvas;
-                },
+                canvas,
                 setCanvas,
             }}
         >

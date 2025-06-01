@@ -33,7 +33,21 @@ export function WindowManager(props: ParentProps) {
             },
         );
 
+        let dragging = false;
+        const unListenMoved = await window.onMoved(() => {
+            // When the window is dragging, we want to lock the draw window.
+            dragging = true;
+            console.log("dragged");
+            setLock(true);
+        });
+
+        const onMouseDown = () => {
+            dragging = true;
+        };
+
         const onMouseMove = async (x: number, y: number) => {
+            if (dragging) return;
+
             const isInside =
                 x >= position.x &&
                 x <= position.x + size.width &&
@@ -46,18 +60,28 @@ export function WindowManager(props: ParentProps) {
                 await setLock(true);
                 window.setFocus();
             } else if (lock()) {
+                console.log("lock released");
                 await setLock(false);
             }
         };
 
+        const onMouseUp = () => {
+            if (dragging) {
+                dragging = false;
+            }
+        };
+
         const cleanup = await setupMouseEventHandler({
+            onMouseDown,
             onMouseMove,
+            onMouseUp,
         });
 
         onCleanup(() => {
             cleanup();
             unListenMove();
             unListenResize();
+            unListenMoved();
         });
     });
 

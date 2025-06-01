@@ -1,10 +1,13 @@
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { createEffect, onCleanup, onMount } from "solid-js";
+import { createEffect, createMemo, onCleanup, onMount } from "solid-js";
 import { useCanvas, useLock, useTool } from "../CanvasController";
 import { Canvas } from "../lib/canvas";
 
 export function CanvasArea() {
+    const [tool] = useTool();
+    const [lock] = useLock();
+
     // Canvas state management
     let canvasElement!: HTMLCanvasElement;
     const [_, setCanvas] = useCanvas();
@@ -17,10 +20,12 @@ export function CanvasArea() {
     });
 
     // Window cursor events
+    const drawing = createMemo(() => tool().kind === "cursor" || lock());
+
     createEffect(() => {
         const window = getCurrentWindow();
 
-        if (tool().kind === "cursor" || lock()) {
+        if (drawing()) {
             window.setIgnoreCursorEvents(true);
             canvasElement.classList.remove("cursor-crosshair");
         } else {
@@ -31,35 +36,33 @@ export function CanvasArea() {
     });
 
     // Tool control
-    const [tool] = useTool();
-    const [lock] = useLock();
-
     createEffect(async () => {
         const unListenMouseDown = await listen("mouse-down", (event) => {
-            if (!lock()) {
-                const [x, y, _] = event.payload as [number, number, boolean];
-                tool().down();
-                tool().move(x, y);
-            }
+            if (drawing()) return;
+
+            const [x, y, _] = event.payload as [number, number, boolean];
+            tool().down();
+            tool().move(x, y);
         });
 
         const unListenMouseMove = await listen("mouse-move", (event) => {
-            if (!lock()) {
-                const [x, y, isMouseDown] = event.payload as [
-                    number,
-                    number,
-                    boolean,
-                ];
+            if (drawing()) return;
+            console.log(1);
 
-                if (!isMouseDown) return;
-                tool().move(x, y);
-            }
+            const [x, y, isMouseDown] = event.payload as [
+                number,
+                number,
+                boolean,
+            ];
+
+            if (!isMouseDown) return;
+            tool().move(x, y);
         });
 
         const unListenMouseUp = await listen("mouse-up", () => {
-            if (!lock()) {
-                tool().up();
-            }
+            if (drawing()) return;
+
+            tool().up();
         });
 
         onCleanup(() => {

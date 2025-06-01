@@ -1,15 +1,13 @@
-import "./DrawApp.css";
-import { GlobalStateProvider } from "./GlobalState";
+import { CanvasControllerProvider } from "./CanvasController";
 import { CanvasArea } from "./components/CanvasArea";
-import { Tooltip } from "./components/Tooltip";
+import "./DrawApp.css";
 
 function DrawApp() {
     return (
         <div class="overflow-hidden select-none">
-            <GlobalStateProvider>
-                <Tooltip />
+            <CanvasControllerProvider>
                 <CanvasArea />
-            </GlobalStateProvider>
+            </CanvasControllerProvider>
         </div>
     );
 }

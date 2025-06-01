@@ -13,8 +13,8 @@
         "windows": [
             {
                 "title": "Monica",
-                "width": 400,
-                "height": 150,
+                "width": 250,
+                "height": 100,
                 "alwaysOnTop": true
             }
         ],

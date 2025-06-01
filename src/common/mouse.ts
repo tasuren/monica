@@ -13,7 +13,7 @@ export async function setupMouseEventHandler(
 ): Promise<() => void> {
     const window = await getCurrentWindow();
     const scaleFactor = await window.scaleFactor();
-    
+
     let unListenMouseDown = () => {};
     let unListenMouseMove = () => {};
     let unListenMouseUp = () => {};
@@ -32,7 +32,9 @@ export async function setupMouseEventHandler(
 
             const [x, y] = event.payload as [number, number];
 
-            if (platform() === "windows") { 
+            if (platform() === "windows") {
+                // On windows, the backend (the crate `device_query`) will return
+                // the mouse position in physical pixels, so we need to scale it down.
                 handler.onMouseMove(x / scaleFactor, y / scaleFactor);
             } else {
                 handler.onMouseMove(x, y);

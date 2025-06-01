@@ -36,7 +36,7 @@ function App() {
     });
 
     return (
-        <div class="overflow-hidden select-none cursor-crosshair">
+        <div class="overflow-hidden select-none">
             <CanvasArea />
         </div>
     );

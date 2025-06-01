@@ -75,13 +75,13 @@ pub fn setup_windows(app: &mut tauri::App) {
         macos::setup_macos_drawing_window(&window);
 
         // For debugging
-        if OPEN_ALL_DRAWING_DEVTOOLS
-            || cfg!(debug_assertions) && monitor.name() == primary_monitor.name()
-        {
+        #[cfg(debug_assertions)]
+        if OPEN_ALL_DRAWING_DEVTOOLS || monitor.position() == primary_monitor.position() {
             window.open_devtools();
         }
     }
 }
 
+#[cfg(debug_assertions)]
 const OPEN_ALL_DRAWING_DEVTOOLS: bool = option_env!("OPEN_ALL_DRAWING_DEVTOOLS").is_some();
 const DISABLE_IGNORE_CURSOR_EVENTS: bool = option_env!("DISABLE_IGNORE_CURSOR_EVENTS").is_some();

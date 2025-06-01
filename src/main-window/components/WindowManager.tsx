@@ -37,7 +37,6 @@ export function WindowManager(props: ParentProps) {
         const unListenMoved = await window.onMoved(() => {
             // When the window is dragging, we want to lock the draw window.
             dragging = true;
-            console.log("dragged");
             setLock(true);
         });
 
@@ -60,7 +59,6 @@ export function WindowManager(props: ParentProps) {
                 await setLock(true);
                 window.setFocus();
             } else if (lock()) {
-                console.log("lock released");
                 await setLock(false);
             }
         };

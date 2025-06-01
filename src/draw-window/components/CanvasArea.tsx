@@ -47,7 +47,6 @@ export function CanvasArea() {
 
         const unListenMouseMove = await listen("mouse-move", (event) => {
             if (drawing()) return;
-            console.log(1);
 
             const [x, y, isMouseDown] = event.payload as [
                 number,

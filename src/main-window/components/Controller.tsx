@@ -46,7 +46,6 @@ function ToolButton(
     const isSelected = createMemo(() => tool() === props.tool);
 
     const onClick = () => {
-        console.log(`Switching to tool: ${props.tool}`);
         setTool(props.tool);
     };
 

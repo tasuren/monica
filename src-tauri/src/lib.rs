@@ -1,6 +1,5 @@
 use tauri::Manager;
 
-mod commands;
 mod mouse;
 mod window;
 

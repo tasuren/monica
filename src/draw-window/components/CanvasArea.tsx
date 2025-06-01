@@ -1,4 +1,3 @@
-import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { createEffect, createMemo, onCleanup, onMount } from "solid-js";
 import { useCanvas, useLock, useTool } from "../CanvasController";
@@ -37,37 +36,29 @@ export function CanvasArea() {
 
     // Tool control
     createEffect(async () => {
-        const unListenMouseDown = await listen("mouse-down", (event) => {
-            if (drawing()) return;
-
-            const [x, y, _] = event.payload as [number, number, boolean];
+        const onMouseDown = (event: MouseEvent) => {
             tool().down();
-            tool().move(x, y);
-        });
+            tool().move(event.clientX, event.clientY);
+        };
 
-        const unListenMouseMove = await listen("mouse-move", (event) => {
-            if (drawing()) return;
+        const onMouseMove = (event: MouseEvent) => {
+            if (event.buttons === 1) {
+                tool().move(event.clientX, event.clientY);
+            }
+        };
 
-            const [x, y, isMouseDown] = event.payload as [
-                number,
-                number,
-                boolean,
-            ];
-
-            if (!isMouseDown) return;
-            tool().move(x, y);
-        });
-
-        const unListenMouseUp = await listen("mouse-up", () => {
-            if (drawing()) return;
-
+        const onMouseUp = () => {
             tool().up();
-        });
+        };
+
+        addEventListener("mousedown", onMouseDown);
+        addEventListener("mousemove", onMouseMove);
+        addEventListener("mouseup", onMouseUp);
 
         onCleanup(() => {
-            unListenMouseDown();
-            unListenMouseMove();
-            unListenMouseUp();
+            removeEventListener("mousedown", onMouseDown);
+            removeEventListener("mousemove", onMouseMove);
+            removeEventListener("mouseup", onMouseUp);
         });
     });
 

@@ -1,7 +1,8 @@
-# Tauri + Solid + Typescript
+# Monica: On-screen anotation software
+**WIP**
 
-This template should help get you started developing with Tauri, Solid and Typescript in Vite.
-
-## Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+<!--
+- **Simple UI** — Simple and non-multifunctional.
+- **Cross-platform** — It supports Windows and macOS. Also it will supports Linux (WIP).
+- **Tiny single executable** — Thanks to tauri, the executable file is less than 10MB.
+-->

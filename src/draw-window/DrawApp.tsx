@@ -5,10 +5,12 @@ import { Tooltip } from "./components/Tooltip";
 
 function DrawApp() {
     return (
-        <GlobalStateProvider>
-            <Tooltip />
-            <CanvasArea />
-        </GlobalStateProvider>
+        <div class="overflow-hidden select-none">
+            <GlobalStateProvider>
+                <Tooltip />
+                <CanvasArea />
+            </GlobalStateProvider>
+        </div>
     );
 }
 

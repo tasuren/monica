@@ -1,5 +1,6 @@
 import { type Window, getAllWindows } from "@tauri-apps/api/window";
 import { setupMouseEventHandler } from "../../common/mouse";
+import type { ToolKind } from "../../common/tool";
 import { isInsideRect } from "../../common/utils";
 import { getWindowPosition, getWindowSize } from "./window-size";
 import { WindowRectTracker, WindowState } from "./window-state";
@@ -71,10 +72,13 @@ async function setupWindowFocus(
     };
 }
 
-async function setupDrawingWindowFocus(lock: () => boolean) {
+async function setupDrawingWindowFocus(
+    tool: () => ToolKind,
+    lock: () => boolean,
+) {
     let beforeWindow = "";
     const onMouseMove = async (x: number, y: number) => {
-        if (lock()) return;
+        if (lock() || tool() === "cursor") return;
 
         const window = await getCurrentDrawingWindow(x, y);
 
@@ -91,6 +95,7 @@ async function setupDrawingWindowFocus(lock: () => boolean) {
 }
 
 export async function setupWindowManagement(opts: {
+    tool: () => ToolKind;
     lock: () => boolean;
     setLock: (lock: boolean) => void;
 }) {
@@ -100,7 +105,10 @@ export async function setupWindowManagement(opts: {
 
     const canvasLock = await setupWindowDraggingCanvasLock(opts.setLock);
     const windowFocus = await setupWindowFocus(state, opts);
-    const drawingWindowFocus = await setupDrawingWindowFocus(opts.lock);
+    const drawingWindowFocus = await setupDrawingWindowFocus(
+        opts.tool,
+        opts.lock,
+    );
 
     const unListenWindowMoved = await state.window.onMoved(async () => {
         canvasLock.onWindowMove();

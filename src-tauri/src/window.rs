@@ -19,13 +19,6 @@ mod macos {
         // Set the window level to status bar level to ensure it appears above the menu bar.
         ns_window.setLevel(objc2_app_kit::NSStatusWindowLevel);
     }
-
-    #[cfg(target_os = "macos")]
-    pub fn setup_macos_tooltip_window(window: &tauri::WebviewWindow) {
-        let ns_window = get_ns_window(window);
-
-        ns_window.setLevel(objc2_app_kit::NSNormalWindowLevel + 1);
-    }
 }
 
 pub fn setup_windows(app: &mut tauri::App) {
@@ -34,9 +27,6 @@ pub fn setup_windows(app: &mut tauri::App) {
     window
         .set_position(tauri::LogicalPosition::new(60., 80.))
         .expect("Failed to set position");
-
-    #[cfg(target_os = "macos")]
-    macos::setup_macos_tooltip_window(&window);
 
     // Drawing windows
     let monitors = app

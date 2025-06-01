@@ -5,12 +5,12 @@
     "windows": ["main"],
     "permissions": [
         "core:default",
-        "opener:default",
         "core:event:allow-listen",
         "core:event:allow-unlisten",
         "core:window:allow-set-focus",
         "core:window:allow-outer-size",
         "core:window:allow-outer-position",
-        "core:window:allow-scale-factor"
+        "core:window:allow-scale-factor",
+        "os:default"
     ]
 }

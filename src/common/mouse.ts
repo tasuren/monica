@@ -1,4 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { platform } from "@tauri-apps/plugin-os";
 
 export interface MouseEventHandler {
     onMouseDown?: () => void;
@@ -9,6 +11,9 @@ export interface MouseEventHandler {
 export async function setupMouseEventHandler(
     handler: MouseEventHandler,
 ): Promise<() => void> {
+    const window = await getCurrentWindow();
+    const scaleFactor = await window.scaleFactor();
+    
     let unListenMouseDown = () => {};
     let unListenMouseMove = () => {};
     let unListenMouseUp = () => {};
@@ -26,7 +31,12 @@ export async function setupMouseEventHandler(
             if (!handler.onMouseMove) return;
 
             const [x, y] = event.payload as [number, number];
-            handler.onMouseMove(x, y);
+
+            if (platform() === "windows") { 
+                handler.onMouseMove(x / scaleFactor, y / scaleFactor);
+            } else {
+                handler.onMouseMove(x, y);
+            }
         });
     }
 

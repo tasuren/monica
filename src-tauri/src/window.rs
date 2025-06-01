@@ -58,7 +58,6 @@ pub fn setup_windows(app: &mut tauri::App) {
         let window =
             WebviewWindowBuilder::new(app, format!("draw-{i}"), WebviewUrl::App("/".into()))
                 .title(format!("Monica Draw Window ({i})"))
-                .hidden_title(true)
                 .decorations(false)
                 .transparent(true)
                 .inner_size(width, height)

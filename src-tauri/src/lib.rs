@@ -4,6 +4,9 @@ mod mouse;
 mod window;
 
 fn setup(app: &mut tauri::App) {
+    #[cfg(target_os = "macos")]
+    app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+
     window::setup_windows(app);
     mouse::setup_mouse_event_listener(app.app_handle().clone()).unwrap();
 }

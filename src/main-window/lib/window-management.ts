@@ -82,7 +82,6 @@ async function setupDrawingWindowFocus(
         const window = await getCurrentDrawingWindow(x, y);
 
         if (beforeWindow !== window.label) {
-            console.log(window.label, "focus-switch");
             window.setFocus();
             beforeWindow = window.label;
         }

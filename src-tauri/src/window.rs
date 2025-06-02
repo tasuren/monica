@@ -31,6 +31,7 @@ mod macos {
 pub fn setup_windows(app: &mut tauri::App) -> WebviewWindow {
     // Main window
     let window = app.get_webview_window("main").unwrap();
+
     window
         .set_position(tauri::LogicalPosition::new(60., 80.))
         .expect("Failed to set position");

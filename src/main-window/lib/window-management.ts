@@ -1,4 +1,9 @@
-import { type Window, getAllWindows } from "@tauri-apps/api/window";
+import {
+    type LogicalPosition,
+    type LogicalSize,
+    type Window,
+    getAllWindows,
+} from "@tauri-apps/api/window";
 import { setupMouseEventHandler } from "../../common/mouse";
 import type { ToolKind } from "../../common/tool";
 import {
@@ -33,13 +38,32 @@ async function setupWindowDraggingCanvasLock(setLock: (lock: boolean) => void) {
     };
 }
 
-async function getCurrentDrawingWindow(x: number, y: number): Promise<Window> {
-    for (const window of await getAllWindows()) {
-        const position = await getWindowPosition(window);
-        const size = await getWindowSize(window);
+let cache:
+    | {
+          window: Window;
+          position: LogicalPosition;
+          size: LogicalSize;
+      }[]
+    | undefined = undefined;
+async function getDrawingWindowRects() {
+    if (cache === undefined) {
+        cache = [];
 
-        if (await isInsideRect(x, y, position, size)) {
-            return window;
+        for (const window of await getAllWindows()) {
+            const position = await getWindowPosition(window);
+            const size = await getWindowSize(window);
+
+            cache.push({ window, position, size });
+        }
+    }
+
+    return cache;
+}
+
+async function getCurrentDrawingWindow(x: number, y: number): Promise<Window> {
+    for (const rect of await getDrawingWindowRects()) {
+        if (await isInsideRect(x, y, rect.position, rect.size)) {
+            return rect.window;
         }
     }
 
@@ -53,6 +77,8 @@ async function setupWindowFocus(
     const { lock, setLock } = opts;
 
     const onMouseMove = async (x: number, y: number) => {
+        console.log(1);
+
         if (await state.isInside({ x, y })) {
             if (lock()) return;
             setLock(true);

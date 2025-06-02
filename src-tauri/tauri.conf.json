@@ -14,8 +14,20 @@
             {
                 "title": "Monica",
                 "width": 250,
-                "height": 100,
-                "alwaysOnTop": true
+                "height": 60,
+                "alwaysOnTop": true,
+                "titleBarStyle": "Overlay",
+                "hiddenTitle": true,
+                "decorations": false,
+                "maximizable": false,
+                "minimizable": false,
+                "closable": false,
+                "transparent": true,
+                "acceptFirstMouse": true,
+                "windowEffects": {
+                    "radius": 5,
+                    "effects": ["mica", "tooltip"]
+                }
             }
         ],
         "security": {

@@ -4,6 +4,7 @@ import {
     unregister,
 } from "@tauri-apps/plugin-global-shortcut";
 import Eraser from "lucide-solid/icons/eraser";
+import Grip from "lucide-solid/icons/grip";
 import MousePointer2 from "lucide-solid/icons/mouse-pointer-2";
 import Pencil from "lucide-solid/icons/pencil";
 import Trash2 from "lucide-solid/icons/trash-2";
@@ -21,16 +22,23 @@ export function Controller() {
     return (
         <div class="flex justify-between">
             <div class="flex gap-2">
+                <div class="flex justify-center p-2" data-tauri-drag-region>
+                    <Grip
+                        class="stroke-black dark:stroke-white"
+                        data-tauri-drag-region
+                    />
+                </div>
+
                 <ToolButton tool="cursor" shortcutKey="Escape">
-                    <MousePointer2 color="white" />
+                    <MousePointer2 class="stroke-black dark:stroke-white" />
                 </ToolButton>
 
                 <ToolButton tool="pen">
-                    <Pencil color="white" />
+                    <Pencil class="stroke-black dark:stroke-white" />
                 </ToolButton>
 
                 <ToolButton tool="eraser">
-                    <Eraser color="white" />
+                    <Eraser class="stroke-black dark:stroke-white" />
                 </ToolButton>
             </div>
 

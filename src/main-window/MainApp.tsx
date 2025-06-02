@@ -15,7 +15,10 @@ function App() {
     });
 
     return (
-        <div class="w-screen h-screen bg-black p-2">
+        <div
+            class="w-screen h-screen p-2 flex flex-col justify-center"
+            data-tauri-drag-region
+        >
             <Controller />
         </div>
     );

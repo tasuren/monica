@@ -1,18 +1,12 @@
-use std::{
-    cell::Cell,
-    sync::{atomic::Ordering, Arc, LazyLock},
-};
+use std::sync::{atomic::Ordering, Arc, LazyLock};
 
 use anyhow::{Context as _, Result};
 use device_query::{DeviceEvents, DeviceEventsHandler, DeviceQuery, DeviceState};
-use tauri::{Emitter, WebviewWindow};
+use tauri::Emitter;
 
 static DEVICE_STATE: LazyLock<DeviceState> = LazyLock::new(DeviceState::new);
 
-pub fn setup_mouse_event_listener(
-    app: tauri::AppHandle,
-    main_window: &WebviewWindow,
-) -> Result<()> {
+pub fn setup_mouse_event_listener(app: tauri::AppHandle) -> Result<()> {
     let device_events_handler = DeviceEventsHandler::new(std::time::Duration::from_millis(10))
         .context("Mouse event handler already initialized")?;
 
@@ -51,14 +45,9 @@ pub fn setup_mouse_event_listener(
         }
     });
 
-    // Drop the callbacks when the main window is closed.
-    let callbacks = Cell::new(Some((on_mouse_down, on_mouse_up, on_mouse_move)));
-
-    main_window.on_window_event(move |event| {
-        if matches!(event, tauri::WindowEvent::CloseRequested { .. }) {
-            callbacks.set(None);
-        }
-    });
+    // Forget the callbacks to prevent them from being dropped
+    // and to keep the event handler running during the application lifetime.
+    std::mem::forget((on_mouse_down, on_mouse_up, on_mouse_move));
 
     Ok(())
 }

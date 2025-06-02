@@ -38,6 +38,22 @@ pub fn setup_windows(app: &mut tauri::App) -> WebviewWindow {
     #[cfg(target_os = "macos")]
     macos::setup_macos_main_window(&window);
 
+    let app_handle = app.app_handle().clone();
+    window.on_window_event(move |event| {
+        if matches!(event, tauri::WindowEvent::CloseRequested { .. }) {
+            for window in app_handle.webview_windows().values() {
+                if let Err(error) = window.destroy() {
+                    eprintln!(
+                        "warning: Failed to close window `{}`: {error:?}",
+                        window.label()
+                    );
+
+                    app_handle.exit(1);
+                };
+            }
+        }
+    });
+
     // Drawing windows
     let monitors = app
         .available_monitors()

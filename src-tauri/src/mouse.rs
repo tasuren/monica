@@ -52,8 +52,6 @@ pub fn setup_mouse_event_listener(
     });
 
     // Drop the callbacks when the main window is closed.
-    // It is to close the device events handler when the app is closing.
-    // If we don't do this, the application will crush on macOS.
     let callbacks = Cell::new(Some((on_mouse_down, on_mouse_up, on_mouse_move)));
 
     main_window.on_window_event(move |event| {

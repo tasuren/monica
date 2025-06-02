@@ -9,7 +9,7 @@ mod macos {
         let ptr = window.ns_window().expect("Failed to get NSWindow");
         // SAFETY: We are assuming that the pointer is valid and correctly typed.
         // It is derived from a Tauri `WebviewWindow`, which is expected to be an `NSWindow`.
-        unsafe { Retained::from_raw(ptr as *mut NSWindow).unwrap() }
+        unsafe { Retained::retain_autoreleased(ptr as *mut NSWindow).unwrap() }
     }
 
     #[cfg(target_os = "macos")]

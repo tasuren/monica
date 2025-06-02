@@ -1,10 +1,8 @@
-use std::sync::{atomic::Ordering, Arc, LazyLock};
+use std::sync::{atomic::Ordering, Arc};
 
 use anyhow::{Context as _, Result};
 use device_query::{DeviceEvents, DeviceEventsHandler, DeviceQuery, DeviceState};
 use tauri::Emitter;
-
-static DEVICE_STATE: LazyLock<DeviceState> = LazyLock::new(DeviceState::new);
 
 pub fn setup_mouse_event_listener(app: tauri::AppHandle) -> Result<()> {
     let device_events_handler = DeviceEventsHandler::new(std::time::Duration::from_millis(10))
@@ -19,7 +17,8 @@ pub fn setup_mouse_event_listener(app: tauri::AppHandle) -> Result<()> {
         move |_| {
             is_mouse_down.store(true, Ordering::SeqCst);
 
-            app.emit("mouse-down", DEVICE_STATE.get_mouse().coords)
+            let device_state = DeviceState::new();
+            app.emit("mouse-down", device_state.get_mouse().coords)
                 .expect("Failed to emit mouse down event");
         }
     });
@@ -31,7 +30,8 @@ pub fn setup_mouse_event_listener(app: tauri::AppHandle) -> Result<()> {
         move |_| {
             is_mouse_down.store(false, Ordering::SeqCst);
 
-            app.emit("mouse-up", DEVICE_STATE.get_mouse().coords)
+            let device_state = DeviceState::new();
+            app.emit("mouse-up", device_state.get_mouse().coords)
                 .expect("Failed to emit mouse up event");
         }
     });
@@ -54,5 +54,6 @@ pub fn setup_mouse_event_listener(app: tauri::AppHandle) -> Result<()> {
 
 #[tauri::command]
 pub fn get_mouse_position() -> (i32, i32) {
-    DEVICE_STATE.get_mouse().coords
+    let device_state = DeviceState::new();
+    device_state.get_mouse().coords
 }

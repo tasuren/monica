@@ -1,3 +1,4 @@
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
     isRegistered,
     register,
@@ -8,6 +9,7 @@ import Grip from "lucide-solid/icons/grip";
 import MousePointer2 from "lucide-solid/icons/mouse-pointer-2";
 import Pencil from "lucide-solid/icons/pencil";
 import Trash2 from "lucide-solid/icons/trash-2";
+import X from "lucide-solid/icons/x";
 import {
     type ParentProps,
     createEffect,
@@ -42,7 +44,11 @@ export function Controller() {
                 </ToolButton>
             </div>
 
-            <ResetButton />
+            <div class="flex gap-2">
+                <ResetButton />
+
+                <ExitButton />
+            </div>
         </div>
     );
 }
@@ -91,7 +97,7 @@ function ToolButton(
     );
 }
 
-export function ResetButton() {
+function ResetButton() {
     const canvas = useCanvas();
 
     return (
@@ -101,6 +107,18 @@ export function ResetButton() {
             onClick={canvas.clear.bind(canvas)}
         >
             <Trash2 color="red" />
+        </button>
+    );
+}
+
+function ExitButton() {
+    const onClick = () => {
+        getCurrentWindow().close();
+    };
+
+    return (
+        <button type="button" class="p-2 cursor-pointer" onClick={onClick}>
+            <X class="stroke-black dark:stroke-white" />
         </button>
     );
 }

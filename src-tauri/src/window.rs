@@ -42,6 +42,8 @@ pub fn setup_windows(app: &mut tauri::App) -> WebviewWindow {
     let app_handle = app.app_handle().clone();
     window.on_window_event(move |event| {
         if matches!(event, tauri::WindowEvent::CloseRequested { .. }) {
+            let mut is_error = false;
+
             for window in app_handle.webview_windows().values() {
                 if let Err(error) = window.destroy() {
                     eprintln!(
@@ -49,9 +51,13 @@ pub fn setup_windows(app: &mut tauri::App) -> WebviewWindow {
                         window.label()
                     );
 
-                    app_handle.exit(1);
+                    is_error = true;
                 };
             }
+
+            if is_error {
+                app_handle.exit(1);
+            };
         }
     });
 

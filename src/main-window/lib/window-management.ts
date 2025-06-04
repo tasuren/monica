@@ -77,8 +77,6 @@ async function setupWindowFocus(
     const { lock, setLock } = opts;
 
     const onMouseMove = async (x: number, y: number) => {
-        console.log(1);
-
         if (await state.isInside({ x, y })) {
             if (lock()) return;
             setLock(true);

@@ -2,7 +2,6 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { createEffect, createMemo, onCleanup } from "solid-js";
 import {
     CanvasControllerProvider,
-    useCanvas,
     useLock,
     useTool,
 } from "./CanvasController";
@@ -12,7 +11,6 @@ import "./DrawApp.css";
 import { setupMouseToolGlue } from "./lib/mouse-tool-glue";
 
 function App() {
-    const [canvas] = useCanvas();
     const [tool] = useTool();
     const [lock] = useLock();
     const drawing = createMemo(() => tool().kind !== "cursor" && !lock());
@@ -21,9 +19,6 @@ function App() {
     let element!: HTMLDivElement;
 
     createEffect(async () => {
-        const canvas_ = canvas();
-        if (!canvas_) return;
-
         if (drawing()) {
             await window.setIgnoreCursorEvents(false);
         } else {

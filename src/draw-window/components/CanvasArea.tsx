@@ -15,7 +15,7 @@ export function CanvasArea() {
 
     return (
         <canvas
-            class="w-screen h-screen active:cursor-crosshair"
+            class="w-screen h-screen"
             ref={canvasElement}
         />
     );

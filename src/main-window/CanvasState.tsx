@@ -5,12 +5,12 @@ import {
     createSignal,
     useContext,
 } from "solid-js";
-import type { ToolKind } from "../common/tool";
 import { CanvasHandle } from "./lib/canvas-handle";
+import { TOOL_CONTEXTS, type ToolContext } from "./lib/tool";
 
 export interface CanvasState {
-    tool(): ToolKind;
-    setTool(tool: ToolKind): void;
+    tool(): ToolContext;
+    setTool(tool: ToolContext): void;
     clear(): void;
     lock(): boolean;
     setLock(lock: boolean): void;
@@ -19,13 +19,13 @@ export interface CanvasState {
 export const CanvasContext = createContext<CanvasState>();
 
 export function CanvasProvider(props: ParentProps) {
-    const [tool, setTool] = createSignal<ToolKind>("cursor");
+    const [tool, setTool] = createSignal<ToolContext>(TOOL_CONTEXTS.cursor);
     const [lock, setLock] = createSignal<boolean>(false);
     const canvasHandle = new CanvasHandle();
 
     // Canvas management
     createEffect(() => {
-        canvasHandle.setTool(tool());
+        canvasHandle.setTool(tool().kind);
     });
 
     createEffect(() => {

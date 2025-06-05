@@ -18,6 +18,7 @@ function App() {
     const drawing = createMemo(() => tool().kind !== "cursor" && !lock());
 
     const window = getCurrentWindow();
+    let element!: HTMLDivElement;
 
     createEffect(async () => {
         const canvas_ = canvas();
@@ -25,9 +26,8 @@ function App() {
 
         if (drawing()) {
             await window.setIgnoreCursorEvents(false);
-            await window.setFocus()
         } else {
-            window.setIgnoreCursorEvents(true);
+            await window.setIgnoreCursorEvents(true);
         }
     });
 
@@ -38,7 +38,7 @@ function App() {
     });
 
     return (
-        <div class="overflow-hidden select-none">
+        <div class="overflow-hidden select-none" ref={element}>
             <CursorDecoration drawing={drawing} />
             <CanvasArea />
         </div>

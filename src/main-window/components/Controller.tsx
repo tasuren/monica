@@ -19,6 +19,7 @@ import {
 import type { ToolKind } from "../../common/tool";
 import { cl } from "../../common/utils";
 import { useCanvas, useTool } from "../CanvasState";
+import { TOOL_CONTEXTS } from "../lib/tool";
 
 export function Controller() {
     return (
@@ -57,10 +58,10 @@ function ToolButton(
     props: ParentProps<{ tool: ToolKind; shortcutKey?: string }>,
 ) {
     const [tool, setTool] = useTool();
-    const isSelected = createMemo(() => tool() === props.tool);
+    const isSelected = createMemo(() => tool().kind === props.tool);
 
     const onClick = () => {
-        setTool(props.tool);
+        setTool(TOOL_CONTEXTS[props.tool]);
     };
 
     if (props.shortcutKey) {

@@ -9,7 +9,13 @@ function App() {
     const [tool, _] = useTool();
 
     createEffect(async () => {
-        const cleanup = await setupWindowManagement({ tool, lock, setLock });
+        const cleanup = await setupWindowManagement({
+            tool() {
+                return tool().kind;
+            },
+            lock,
+            setLock,
+        });
 
         onCleanup(() => cleanup());
     });

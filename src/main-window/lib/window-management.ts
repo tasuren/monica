@@ -84,9 +84,6 @@ async function setupWindowFocus(
             state.window.setFocus();
         } else if (lock()) {
             setLock(false);
-
-            const window = await getCurrentDrawingWindow(x, y);
-            window.setFocus();
         }
     };
 

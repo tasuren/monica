@@ -38,6 +38,12 @@
     "bundle": {
         "active": true,
         "targets": "all",
+        "copyright": "(c) 2025 Takagi Tasuku",
+        "shortDescription": "Simple on-screen annotation software",
+        "category": "Productivity",
+        "licenseFile": "../LICENSE",
+        "publisher": "Takagi Tasuku",
+        "homepage": "https://monica.tasuren.jp/",
         "icon": [
             "icons/macos/32x32.png",
             "icons/macos/128x128.png",

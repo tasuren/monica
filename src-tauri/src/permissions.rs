@@ -1,8 +1,8 @@
-use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
+#[cfg(target_os = "macos")]
+pub mod macos {
+    use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 
-pub async fn check_permissions(app: &tauri::App) {
-    #[cfg(target_os = "macos")]
-    {
+    pub async fn check_permissions(app: &tauri::App) {
         if !tauri_plugin_macos_permissions::check_accessibility_permission().await {
             app.dialog()
                 .message(

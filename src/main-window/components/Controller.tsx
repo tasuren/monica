@@ -93,8 +93,8 @@ function ToolButton(
             class={cl(
                 "rounded-xl p-2",
                 isSelected()
-                    ? "bg-white/40"
-                    : "hover:bg-white/20 cursor-pointer",
+                    ? "bg-black/10 dark:bg-white/40"
+                    : "hover:bg-black/5 hover:dark:bg-white/20 cursor-pointer",
             )}
             onClick={onClick}
         >

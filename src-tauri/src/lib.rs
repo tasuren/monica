@@ -22,7 +22,7 @@ pub fn run() {
     let builder = {
         tauri::Builder::default()
             .plugin(tauri_plugin_dialog::init())
-            .plugin(tauri_plugin_macos_permissions::init());
+            .plugin(tauri_plugin_macos_permissions::init())
     };
     #[cfg(not(target_os = "macos"))]
     let builder = tauri::Builder::default();

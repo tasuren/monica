@@ -17,14 +17,15 @@ fn setup(app: &mut tauri::App) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let mut builder = tauri::Builder::default();
 
     #[cfg(target_os = "macos")]
-    {
-        builder = builder
+    let builder = {
+        tauri::Builder::default()
             .plugin(tauri_plugin_dialog::init())
             .plugin(tauri_plugin_macos_permissions::init());
-    }
+    };
+    #[cfg(not(target_os = "macos"))]
+    let builder = tauri::Builder::default();
 
     builder
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())

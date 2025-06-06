@@ -1,8 +1,8 @@
 [package]
-name = "monica"
-version = "0.1.0"
-description = "A Tauri App"
+name = "monica-backend"
 authors = ["Takagi Tasuku (tasuren@outlook.jp)"]
+license-file = "../LICENSE"
+publish = false
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

@@ -2110,8 +2110,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "monica"
-version = "0.1.0"
+name = "monica-backend"
+version = "0.0.0"
 dependencies = [
  "anyhow",
  "device_query",

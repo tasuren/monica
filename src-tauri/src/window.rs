@@ -88,6 +88,7 @@ pub fn setup_windows(app: &mut tauri::App) -> WebviewWindow {
                 .always_on_top(true)
                 .resizable(false)
                 .accept_first_mouse(true)
+                .skip_taskbar(true)
                 .build()
                 .expect("Failed to create window");
 

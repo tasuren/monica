@@ -1,5 +1,5 @@
 import type { ToolKind } from "../../common/tool";
-import { Cursor, Eraser, Pen, type Tool } from "./tool";
+import { Circle, Cursor, Eraser, Pen, type Tool } from "./tool";
 
 export class Canvas {
     private readonly ctx: CanvasRenderingContext2D;
@@ -8,6 +8,7 @@ export class Canvas {
     public readonly cursor: Cursor;
     public readonly pen: Pen;
     public readonly eraser: Eraser;
+    public readonly circle: Circle;
 
     constructor(canvasElement: HTMLCanvasElement) {
         this.ctx = canvasElement.getContext("2d") as CanvasRenderingContext2D;
@@ -16,6 +17,7 @@ export class Canvas {
         this.cursor = new Cursor();
         this.pen = new Pen(this.ctx);
         this.eraser = new Eraser(this.ctx);
+        this.circle = new Circle();
     }
 
     getElement(): HTMLCanvasElement {
@@ -34,6 +36,8 @@ export class Canvas {
                 return this.pen;
             case "eraser":
                 return this.eraser;
+            case "circle":
+                return this.circle;
             default:
                 throw new Error(`Unknown tool kind: ${kind}`);
         }

@@ -13,7 +13,7 @@
         "windows": [
             {
                 "title": "Monica",
-                "width": 300,
+                "width": 350,
                 "height": 60,
                 "alwaysOnTop": true,
                 "titleBarStyle": "Overlay",

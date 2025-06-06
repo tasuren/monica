@@ -2,6 +2,7 @@ import type { ToolKind } from "../../common/tool";
 
 export abstract class Tool {
     abstract get kind(): ToolKind;
+    abstract get drawTool(): boolean;
 
     abstract down(): void;
     abstract isDowned(): boolean;
@@ -11,6 +12,7 @@ export abstract class Tool {
 
 export class Cursor extends Tool {
     public readonly kind: ToolKind = "cursor";
+    public readonly drawTool = false;
 
     down(): void {}
     isDowned(): boolean {
@@ -22,6 +24,7 @@ export class Cursor extends Tool {
 
 export class Pen extends Tool {
     public readonly kind: ToolKind = "pen";
+    public readonly drawTool = true;
     private painting = false;
 
     private beforePainted: [number, number] | undefined = undefined;
@@ -46,6 +49,8 @@ export class Pen extends Tool {
     }
 
     move(x: number, y: number) {
+        if (!this.isDowned()) return;
+
         this.ctx.beginPath();
         this.ctx.arc(x, y, this.size / 2, 0, 2 * Math.PI);
         this.ctx.fill();
@@ -71,6 +76,7 @@ export class Pen extends Tool {
 
 export class Eraser extends Tool {
     public readonly kind: ToolKind = "eraser";
+    public readonly drawTool = true;
     private erasing = false;
 
     private beforeErased: [number, number] | undefined = undefined;
@@ -93,6 +99,8 @@ export class Eraser extends Tool {
     }
 
     move(x: number, y: number) {
+        if (!this.isDowned()) return;
+
         this.ctx.beginPath();
         this.ctx.arc(x, y, this.size / 2, 0, 2 * Math.PI);
         this.ctx.fill();
@@ -114,4 +122,44 @@ export class Eraser extends Tool {
 
         this.erasing = false;
     }
+}
+
+export class Circle extends Tool {
+    public readonly kind: ToolKind = "circle";
+    public readonly drawTool = false;
+    private element: HTMLDivElement | undefined = undefined;
+
+    private deltaX = 0;
+    private deltaY = 0;
+
+    down(): void {}
+
+    isDowned(): boolean {
+        return false;
+    }
+
+    setElement(element: HTMLDivElement): void {
+        this.element = element;
+
+        const rect = element.getBoundingClientRect();
+        this.deltaX = rect.width / 2;
+        this.deltaY = rect.height / 2;
+    }
+
+    getElement(): HTMLDivElement {
+        if (!this.element) {
+            throw new Error("Circle tool element is not initialized.");
+        }
+
+        return this.element;
+    }
+
+    move(x: number, y: number): void {
+        const element = this.getElement();
+
+        element.style.left = `${x - this.deltaX}px`;
+        element.style.top = `${y - this.deltaY}px`;
+    }
+
+    up(): void {}
 }

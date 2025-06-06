@@ -9,13 +9,7 @@ export function setupMouseToolGlue(tool: () => Tool) {
     };
 
     const onMouseMove = (event: MouseEvent) => {
-        if (event.buttons === 1 && tool().kind !== "cursor") {
-            if (!tool().isDowned()) {
-                tool().down();
-            }
-
-            tool().move(event.clientX, event.clientY);
-        }
+        tool().move(event.clientX, event.clientY);
     };
 
     const onMouseUp = () => {

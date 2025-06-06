@@ -2,6 +2,7 @@ import {
     type ParentProps,
     createContext,
     createEffect,
+    createMemo,
     createSignal,
     onCleanup,
     useContext,
@@ -15,7 +16,8 @@ export interface CanvasController {
     setTool(tool: Tool): void;
     lock(): boolean;
     setLock(lock: boolean): void;
-    canvas(): Canvas | undefined;
+    drawing(): boolean;
+    canvas(): Canvas;
     setCanvas(canvas: Canvas): void;
 }
 
@@ -55,6 +57,8 @@ export function CanvasControllerProvider(props: ParentProps) {
         onCleanup(() => cleanup());
     });
 
+    const drawing = createMemo(() => tool().drawTool && !lock());
+
     return (
         <CanvasControllerContext.Provider
             value={{
@@ -62,7 +66,12 @@ export function CanvasControllerProvider(props: ParentProps) {
                 setTool,
                 lock,
                 setLock,
-                canvas,
+                drawing,
+                canvas() {
+                    const canvas_ = canvas();
+                    if (!canvas_) throw new Error("Canvas is not initialized.");
+                    return canvas_;
+                },
                 setCanvas,
             }}
         >
@@ -91,4 +100,9 @@ export function useCanvas() {
 export function useLock() {
     const state = useCanvasController();
     return [state.lock, state.setLock] as const;
+}
+
+export function useDrawing() {
+    const state = useCanvasController();
+    return state.drawing;
 }

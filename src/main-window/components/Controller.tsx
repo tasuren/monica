@@ -4,6 +4,7 @@ import {
     register,
     unregister,
 } from "@tauri-apps/plugin-global-shortcut";
+import Circle from "lucide-solid/icons/circle";
 import Eraser from "lucide-solid/icons/eraser";
 import Grip from "lucide-solid/icons/grip";
 import MousePointer2 from "lucide-solid/icons/mouse-pointer-2";
@@ -42,6 +43,10 @@ export function Controller() {
 
                 <ToolButton tool="eraser">
                     <Eraser class="stroke-black dark:stroke-white" />
+                </ToolButton>
+
+                <ToolButton tool="circle">
+                    <Circle class="stroke-black dark:stroke-white" />
                 </ToolButton>
             </div>
 
@@ -105,7 +110,7 @@ function ResetButton() {
         <button
             type="button"
             class="p-2 cursor-pointer"
-            onClick={canvas.clear.bind(canvas)}
+            onClick={() => canvas.clear()}
         >
             <Trash2 color="red" />
         </button>

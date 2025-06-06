@@ -25,9 +25,14 @@ export class CursorContext {
     public readonly kind: ToolKind = "cursor";
 }
 
+export class CircleContext {
+    public readonly kind: ToolKind = "circle";
+}
+
 export type ToolContext = PenContext | EraserContext | CursorContext;
 export const TOOL_CONTEXTS = {
     pen: new PenContext(),
     eraser: new EraserContext(),
     cursor: new CursorContext(),
+    circle: new CircleContext(),
 } as const;

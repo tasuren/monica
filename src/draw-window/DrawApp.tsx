@@ -1,19 +1,17 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { createEffect, createMemo, onCleanup } from "solid-js";
+import { createEffect, onCleanup } from "solid-js";
 import {
     CanvasControllerProvider,
-    useLock,
+    useDrawing,
     useTool,
 } from "./CanvasController";
 import { CanvasArea } from "./components/CanvasArea";
-import { CursorDecoration } from "./components/CursorDecoration";
 import "./DrawApp.css";
 import { setupMouseToolGlue } from "./lib/mouse-tool-glue";
 
 function App() {
     const [tool] = useTool();
-    const [lock] = useLock();
-    const drawing = createMemo(() => tool().kind !== "cursor" && !lock());
+    const drawing = useDrawing();
 
     const window = getCurrentWindow();
     let element!: HTMLDivElement;
@@ -34,7 +32,6 @@ function App() {
 
     return (
         <div class="overflow-hidden select-none" ref={element}>
-            <CursorDecoration drawing={drawing} />
             <CanvasArea />
         </div>
     );

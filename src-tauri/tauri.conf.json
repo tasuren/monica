@@ -24,6 +24,7 @@
                 "closable": false,
                 "transparent": true,
                 "acceptFirstMouse": true,
+                "skipTaskbar": true,
                 "windowEffects": {
                     "radius": 5,
                     "effects": ["mica", "tooltip"]

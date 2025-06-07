@@ -129,9 +129,6 @@ export class Circle extends Tool {
     public readonly drawTool = false;
     private element: HTMLDivElement | undefined = undefined;
 
-    private deltaX = 0;
-    private deltaY = 0;
-
     down(): void {}
 
     isDowned(): boolean {
@@ -140,10 +137,6 @@ export class Circle extends Tool {
 
     setElement(element: HTMLDivElement): void {
         this.element = element;
-
-        const rect = element.getBoundingClientRect();
-        this.deltaX = rect.width / 2;
-        this.deltaY = rect.height / 2;
     }
 
     getElement(): HTMLDivElement {
@@ -157,8 +150,9 @@ export class Circle extends Tool {
     move(x: number, y: number): void {
         const element = this.getElement();
 
-        element.style.left = `${x - this.deltaX}px`;
-        element.style.top = `${y - this.deltaY}px`;
+        const rect = element.getBoundingClientRect();
+        element.style.left = `${x - rect.width / 2}px`;
+        element.style.top = `${y - rect.height / 2}px`;
     }
 
     up(): void {}

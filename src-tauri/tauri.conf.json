@@ -41,6 +41,7 @@
         "targets": "all",
         "copyright": "(c) 2025 Takagi Tasuku",
         "shortDescription": "Simple on-screen annotation software",
+        "longDescription": "This software allows you to draw and highlight directly on your screen. Enhance your presentations, online meetings, and educational content by easily adding notes and drawings on the fly.",
         "category": "Productivity",
         "licenseFile": "../LICENSE",
         "publisher": "Takagi Tasuku",

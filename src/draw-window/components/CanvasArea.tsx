@@ -1,3 +1,4 @@
+import { platform } from "@tauri-apps/plugin-os";
 import { createEffect, onCleanup, onMount } from "solid-js";
 import { setupMouseEventHandler } from "../../common/mouse";
 import { useCanvas, useDrawing, useTool } from "../CanvasController";
@@ -43,7 +44,14 @@ function CircleTool() {
     createEffect(async () => {
         const cleanup = await setupMouseEventHandler({
             onMouseMove(x, y) {
-                canvas().circle.move(x, y);
+                const circle = canvas().circle;
+                
+                if (platform() === "windows") {
+                    // Possibly, cursor offset differs on Windows
+                    circle.move(x - 5, y);
+                } else {
+                    circle.move(x, y);
+                }
             },
         });
 

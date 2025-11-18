@@ -1,5 +1,6 @@
 use gpui::{App, AppContext, px, size};
 
+mod icon;
 mod ui;
 
 const APP_IDENTIFIER: &str = "jp.tasuren.monica";
@@ -29,7 +30,7 @@ fn setup_window(cx: &mut App) {
     };
 
     cx.open_window(window_options, |window, cx| {
-        let app_view = cx.new(|_| ui::AppView {});
+        let app_view = cx.new(|cx| ui::AppView::new(cx));
         cx.new(|cx| gpui_component::Root::new(app_view, window, cx))
     })
     .expect("Failed to open the main window.");
@@ -37,6 +38,6 @@ fn setup_window(cx: &mut App) {
 
 fn main() {
     gpui::Application::new()
-        .with_assets(gpui_component_assets::Assets)
+        .with_assets(icon::Assets)
         .run(setup);
 }

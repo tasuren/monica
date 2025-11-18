@@ -1,9 +1,25 @@
-use gpui::{div, prelude::*};
+use gpui::prelude::*;
+use gpui_component::{Icon, h_flex};
 
 pub struct AppView {}
 
+impl AppView {
+    pub fn new(_cx: &mut Context<'_, Self>) -> Self {
+        Self {}
+    }
+}
+
 impl Render for AppView {
-    fn render(&mut self, window: &mut gpui::Window, cx: &mut Context<Self>) -> impl IntoElement {
-        div().size_full().child("hello")
+    fn render(&mut self, _window: &mut gpui::Window, _cx: &mut Context<Self>) -> impl IntoElement {
+        h_flex()
+            .size_full()
+            .p_1()
+            .child(Icon::empty().path("icons/grip.svg").size_6())
+            .child(Icon::empty().path("icons/mouse-pointer-2.svg").size_6())
+            .child(Icon::empty().path("icons/pencil.svg").size_6())
+            .child(Icon::empty().path("icons/eraser.svg").size_6())
+            .child(Icon::empty().path("icons/circle.svg").size_6())
+            .child(Icon::empty().path("icons/trash-2.svg").size_6())
+            .child(Icon::empty().path("icons/x.svg").size_6())
     }
 }

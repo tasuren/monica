@@ -7,4 +7,5 @@ license = "GPL-3.0-or-later"
 [dependencies]
 gpui = "0.2.2"
 gpui-component = "0.4.0"
-gpui-component-assets = "0.4.0"
+rust-embed = "8.9.0"
+anyhow = "1.0"

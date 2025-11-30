@@ -65,7 +65,8 @@ impl Render for TitleBar {
                 h_flex()
                     .ml_auto()
                     .items_center()
-                    .gap_2()
+                    .px_1()
+                    .gap_1()
                     .child(
                         self.render_normal_button(cx, "undo-button", "icons/undo.svg")
                             .on_click(cx.listener(|_view, _, _, cx| {
@@ -76,9 +77,17 @@ impl Render for TitleBar {
                     )
                     .child(
                         self.render_normal_button(cx, "trash-button", "icons/trash-2.svg")
-                            .custom(ButtonCustomVariant::new(cx).foreground(gpui::red())),
-                    )
-                    .child(self.render_normal_button(cx, "close-button", "icons/x.svg")),
+                            .custom(
+                                ButtonCustomVariant::new(cx)
+                                    .foreground(gpui::red())
+                                    .active(gpui::white().alpha(0.3))
+                            )
+                            .on_click(cx.listener(|_, _, _, cx| {
+                                GlobalState::update_global(cx, |state, cx| {
+                                    state.canvas_manager().clear(cx);
+                                })
+                            }))
+                    ),
             )
             .on_mouse_down(MouseButton::Left, |_event, window, _cx| {
                 window.start_window_move();

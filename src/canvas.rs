@@ -65,9 +65,14 @@ impl GlobalState {
 
 impl gpui::Global for GlobalState {}
 
+pub enum UseScope {
+    OneDisplay(DisplayId),
+    All,
+}
+
 pub struct CanvasManager {
     all: HashMap<DisplayId, WeakEntity<Canvas>>,
-    use_history: VecDeque<DisplayId>,
+    use_history: VecDeque<UseScope>,
 }
 
 impl CanvasManager {
@@ -90,27 +95,74 @@ impl CanvasManager {
     }
 
     fn use_canvas(&mut self, display_id: DisplayId) {
-        self.use_history.push_back(display_id);
+        self.use_history.push_back(UseScope::OneDisplay(display_id));
     }
 
     pub fn undo(&mut self, cx: &mut App) -> bool {
-        if let Some(id) = self.use_history.pop_back()
-            && let Some(canvas) = self.all.get(&id)
-        {
-            canvas
-                .update(cx, |canvas, cx| {
-                    canvas.undo();
-                    cx.notify();
-                })
-                .unwrap();
+        if let Some(use_history) = self.use_history.pop_back() {
+            match use_history {
+                UseScope::All => {
+                    for canvas in self.all.values() {
+                        canvas
+                            .update(cx, |canvas, cx| {
+                                canvas.undo();
+                                cx.notify();
+                            })
+                            .unwrap();
+                    }
+                }
+                UseScope::OneDisplay(display_id) => {
+                    if let Some(canvas) = self.all.get(&display_id) {
+                        canvas
+                            .update(cx, |canvas, cx| {
+                                canvas.undo();
+                                cx.notify();
+                            })
+                            .unwrap();
+                    };
+                }
+            }
 
             !self.use_history.is_empty()
         } else {
             false
         }
     }
+
+    pub fn clear(&mut self, cx: &mut App) {
+        for canvas in self.all.values() {
+            canvas
+                .update(cx, |canvas, cx| {
+                    canvas.clear();
+                    cx.notify();
+                })
+                .unwrap();
+        }
+
+        self.use_history.push_back(UseScope::All);
+    }
 }
 
+#[derive(Clone, Debug)]
+pub struct CanvasEraser {
+    radius: Pixels,
+    trail: Vec<Point<Pixels>>,
+}
+
+impl CanvasEraser {
+    fn new(radius: Pixels) -> Self {
+        Self {
+            radius,
+            trail: Vec::new(),
+        }
+    }
+
+    fn draw(&mut self, pos: Point<Pixels>) {
+        self.trail.push(pos);
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct CanvasPath {
     color: Hsla,
     stroke: Pixels,
@@ -147,12 +199,68 @@ impl CanvasPath {
     fn draw(&mut self, pos: Point<Pixels>) {
         self.trail.push(pos);
     }
+
+    fn erase(&self, eraser_trail: &[Point<Pixels>], radius: Pixels) -> Option<Vec<Self>> {
+        let radius_f32 = f32::from(radius);
+        let radius_sq = radius_f32 * radius_f32;
+        let mut new_paths = Vec::new();
+        let mut current_trail = Vec::new();
+        let mut modified = false;
+
+        for point in &self.trail {
+            let mut hit = false;
+            for e_pos in eraser_trail {
+                let dx = f32::from(point.x - e_pos.x);
+                let dy = f32::from(point.y - e_pos.y);
+                if dx * dx + dy * dy <= radius_sq {
+                    hit = true;
+                    break;
+                }
+            }
+
+            if hit {
+                modified = true;
+
+                if !current_trail.is_empty() {
+                    new_paths.push(Self {
+                        color: self.color,
+                        stroke: self.stroke,
+                        trail: current_trail,
+                    });
+                    current_trail = Vec::new();
+                }
+            } else {
+                current_trail.push(*point);
+            }
+        }
+
+        if !modified {
+            return None;
+        }
+
+        if !current_trail.is_empty() {
+            new_paths.push(Self {
+                color: self.color,
+                stroke: self.stroke,
+                trail: current_trail,
+            });
+        }
+
+        Some(new_paths)
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum CanvasAction {
+    Clear,
+    DrawLine(CanvasPath),
+    Erase(CanvasEraser),
 }
 
 pub struct Canvas {
     window_handle: AnyWindowHandle,
     display_id: DisplayId,
-    stack: VecDeque<CanvasPath>,
+    stack: VecDeque<CanvasAction>,
     painting: bool,
 }
 
@@ -167,8 +275,35 @@ impl Canvas {
     }
 
     pub fn paint(&self, window: &mut Window) {
-        for path in self.stack.iter() {
-            path.paint(window)
+        let start_index = self
+            .stack
+            .iter()
+            .rposition(|action| matches!(action, CanvasAction::Clear))
+            .map(|i| i + 1)
+            .unwrap_or(0);
+
+        let mut visible_paths: Vec<CanvasPath> = Vec::new();
+        for action in self.stack.iter().skip(start_index) {
+            match action {
+                CanvasAction::DrawLine(path) => visible_paths.push(path.clone()),
+                CanvasAction::Erase(eraser) => {
+                    let mut next_paths = Vec::new();
+                    for path in visible_paths {
+                        if let Some(fragments) = path.erase(&eraser.trail, eraser.radius) {
+                            next_paths.extend(fragments);
+                        } else {
+                            next_paths.push(path);
+                        }
+                    }
+
+                    visible_paths = next_paths;
+                }
+                CanvasAction::Clear => visible_paths.clear(),
+            }
+        }
+
+        for path in visible_paths {
+            path.paint(window);
         }
     }
 
@@ -177,18 +312,24 @@ impl Canvas {
             self.painting = true;
             let state = GlobalState::global(cx);
 
-            let color = if state.tool == Tool::Eraser {
-                gpui::transparent_white()
+            if state.tool == Tool::Eraser {
+                let mut eraser = CanvasEraser::new(px(20.));
+                eraser.draw(pos);
+                self.stack.push_back(CanvasAction::Erase(eraser));
             } else {
-                state.color
-            };
-
-            let mut path = CanvasPath::new(color);
-            path.draw(pos);
-            self.stack.push_back(path);
+                let color = state.color;
+                let mut path = CanvasPath::new(color);
+                path.draw(pos);
+                self.stack.push_back(CanvasAction::DrawLine(path));
+            }
         } else {
-            let path = self.stack.get_mut(self.stack.len() - 1).unwrap();
-            path.draw(pos);
+            let maybe_action = self.stack.back_mut().unwrap();
+
+            match maybe_action {
+                CanvasAction::DrawLine(path) => path.draw(pos),
+                CanvasAction::Erase(eraser) => eraser.draw(pos),
+                _ => {}
+            }
         }
     }
 
@@ -204,7 +345,13 @@ impl Canvas {
         });
     }
 
-    pub fn undo(&mut self) {
+    fn undo(&mut self) {
+        self.painting = false;
         self.stack.pop_back();
+    }
+
+    fn clear(&mut self) {
+        self.painting = false;
+        self.stack.push_back(CanvasAction::Clear);
     }
 }

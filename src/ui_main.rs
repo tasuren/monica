@@ -101,7 +101,7 @@ impl Tool {
             0 => Self::Cursor,
             1 => Self::Pen,
             2 => Self::Eraser,
-            3 => Self::Hightlight,
+            3 => Self::Highlight,
             _ => unreachable!(),
         }
     }
@@ -149,7 +149,7 @@ impl Render for ToolSelect {
                     cx,
                     "tool-highlight",
                     "icons/circle.svg",
-                    Tool::Hightlight,
+                    Tool::Highlight,
                 ))
                 .on_click(cx.listener(|_, selected: &Vec<usize>, _, cx| {
                     let tool = Tool::from_number(*selected.first().unwrap());

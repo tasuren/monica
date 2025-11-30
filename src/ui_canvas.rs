@@ -1,6 +1,6 @@
-use gpui::{App, Entity, MouseMoveEvent, canvas, div, prelude::*};
+use gpui::{App, Entity, MouseMoveEvent, ReadGlobal, canvas, div, prelude::*};
 
-use crate::canvas::Canvas;
+use crate::canvas::{Canvas, GlobalState, Tool};
 
 pub struct CanvasView {
     canvas: Entity<Canvas>,
@@ -22,12 +22,24 @@ impl Render for CanvasView {
                     let canvas = self.canvas.clone();
 
                     move |_, _, window, cx| {
-                        canvas.read(cx).paint(window);
+                        canvas.update(cx, |canvas, _| {
+                            canvas.paint(window);
+                        });
                     }
                 })
                 .bg(gpui::transparent_white()),
             )
             .on_mouse_move(cx.listener(|view, event: &MouseMoveEvent, _window, cx| {
+                // Highlight tool
+                if GlobalState::global(cx).tool() == Tool::Highlight {
+                    view.canvas.update(cx, |canvas, cx| {
+                        canvas.set_highlight(event.position);
+
+                        cx.notify();
+                    });
+                }
+
+                // Canvas draw tool
                 if !matches!(event.pressed_button, Some(gpui::MouseButton::Left)) {
                     view.canvas.update(cx, |canvas, cx| {
                         if canvas.is_painting() {

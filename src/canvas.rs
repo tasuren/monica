@@ -13,7 +13,7 @@ pub enum Tool {
     Cursor,
     Pen,
     Eraser,
-    Hightlight,
+    Highlight,
 }
 
 impl Tool {
@@ -262,6 +262,7 @@ pub struct Canvas {
     display_id: DisplayId,
     stack: VecDeque<CanvasAction>,
     painting: bool,
+    highlight_pos: Option<Point<Pixels>>,
 }
 
 impl Canvas {
@@ -271,10 +272,12 @@ impl Canvas {
             display_id,
             stack: VecDeque::new(),
             painting: false,
+            highlight_pos: None,
         }
     }
 
-    pub fn paint(&self, window: &mut Window) {
+    pub fn paint(&mut self, window: &mut Window) {
+        // Normal user drawings
         let start_index = self
             .stack
             .iter()
@@ -304,6 +307,32 @@ impl Canvas {
 
         for path in visible_paths {
             path.paint(window);
+        }
+
+        // Cursor highlight
+        if let Some(pos) = self.highlight_pos.take() {
+            let cx = pos.x;
+            let cy = pos.y;
+            let r = px(20.0);
+            let mut path = PathBuilder::fill();
+
+            path.move_to(Point::new(cx + r, cy));
+            path.arc_to(
+                Point::new(r, r),
+                px(0.0),
+                false,
+                false,
+                Point::new(cx - r, cy),
+            );
+            path.arc_to(
+                Point::new(r, r),
+                px(0.0),
+                false,
+                false,
+                Point::new(cx + r, cy),
+            );
+
+            window.paint_path(path.build().unwrap(), gpui::red().alpha(0.4))
         }
     }
 
@@ -353,5 +382,9 @@ impl Canvas {
     fn clear(&mut self) {
         self.painting = false;
         self.stack.push_back(CanvasAction::Clear);
+    }
+
+    pub fn set_highlight(&mut self, pos: Point<Pixels>) {
+        self.highlight_pos = Some(pos);
     }
 }

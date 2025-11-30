@@ -1,11 +1,11 @@
-use gpui::{App, ElementId, Entity, MouseButton, div, prelude::*, px};
+use gpui::{App, ElementId, Entity, MouseButton, ReadGlobal, UpdateGlobal, prelude::*, px};
 use gpui_component::{
     ActiveTheme, Icon, Selectable, Sizable,
     button::{Button, ButtonCustomVariant, ButtonGroup, ButtonVariants},
     h_flex, v_flex,
 };
 
-use crate::canvas::Tool;
+use crate::canvas::{GlobalState, Tool};
 
 pub struct AppView {
     title_bar: Entity<TitleBar>,
@@ -16,13 +16,13 @@ impl AppView {
     pub fn new(cx: &mut Context<'_, Self>) -> Self {
         Self {
             title_bar: cx.new(|_| TitleBar),
-            tool_select: cx.new(|cx| ToolSelect::new(cx)),
+            tool_select: cx.new(|_| ToolSelect),
         }
     }
 }
 
 impl Render for AppView {
-    fn render(&mut self, _window: &mut gpui::Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, _window: &mut gpui::Window, _cx: &mut Context<Self>) -> impl IntoElement {
         v_flex()
             .id("toolbar")
             .size_full()
@@ -66,7 +66,14 @@ impl Render for TitleBar {
                     .ml_auto()
                     .items_center()
                     .gap_2()
-                    .child(self.render_normal_button(cx, "undo-button", "icons/undo.svg"))
+                    .child(
+                        self.render_normal_button(cx, "undo-button", "icons/undo.svg")
+                            .on_click(cx.listener(|_view, _, _, cx| {
+                                GlobalState::update_global(cx, |state, cx| {
+                                    state.canvas_manager().undo(cx);
+                                });
+                            })),
+                    )
                     .child(
                         self.render_normal_button(cx, "trash-button", "icons/trash-2.svg")
                             .custom(ButtonCustomVariant::new(cx).foreground(gpui::red())),
@@ -91,17 +98,9 @@ impl Tool {
     }
 }
 
-struct ToolSelect {
-    selected_tool: Tool,
-}
+struct ToolSelect;
 
 impl ToolSelect {
-    fn new(_cx: &mut App) -> Self {
-        Self {
-            selected_tool: Tool::Pen,
-        }
-    }
-
     fn render_tool_button(
         &self,
         cx: &mut App,
@@ -115,7 +114,7 @@ impl ToolSelect {
             .custom(ButtonCustomVariant::new(cx).active(gpui::white().alpha(0.3)))
             .size_10()
             .with_size(px(36.))
-            .selected(tool == self.selected_tool)
+            .selected(tool == GlobalState::global(cx).tool())
             .rounded_xl()
     }
 }
@@ -143,8 +142,13 @@ impl Render for ToolSelect {
                     "icons/circle.svg",
                     Tool::Hightlight,
                 ))
-                .on_click(cx.listener(|view, selected: &Vec<usize>, _, cx| {
-                    view.selected_tool = Tool::from_number(*selected.first().unwrap());
+                .on_click(cx.listener(|_, selected: &Vec<usize>, _, cx| {
+                    let tool = Tool::from_number(*selected.first().unwrap());
+
+                    GlobalState::update_global(cx, |state, cx| {
+                        state.set_tool(cx, tool);
+                    });
+
                     cx.notify();
                 })),
         )

@@ -15,3 +15,22 @@ anyhow = "1.0"
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "0.6.3"
 objc2-app-kit = { version = "0.3.2", features = ["NSWindow", "NSResponder", "NSView"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
+
+[package.metadata.bundle]
+name = "Monica"
+identifier = "jp.tasuren.monica"
+icon = ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png"]
+copyright = "(c) 2025 Takagi Tasuku"
+category = "Productivity"
+short_description = "Simple, cross-platform on-screen annotation software"
+long_description = """
+This software allows you to draw and highlight directly on your screen.
+Enhance your presentations, online meetings, and educational content by easily adding notes and drawings on the fly.
+"""

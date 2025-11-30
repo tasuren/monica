@@ -1,5 +1,6 @@
 use gpui::{App, AppContext, px, size};
 
+mod canvas;
 mod icon;
 mod ui;
 
@@ -18,19 +19,20 @@ fn setup_window(cx: &mut App) {
         appears_transparent: true,
         ..Default::default()
     });
-    let bounds = gpui::Bounds::centered(None, size(px(350.), px(60.)), cx);
+    let bounds = gpui::Bounds::centered(None, size(px(230.), px(100.)), cx);
     let window_bounds = Some(gpui::WindowBounds::Windowed(bounds));
 
     let window_options = gpui::WindowOptions {
         titlebar,
         window_bounds,
+        is_resizable: false,
         kind: gpui::WindowKind::PopUp,
         app_id: Some(APP_IDENTIFIER.to_owned()),
         ..Default::default()
     };
 
     cx.open_window(window_options, |window, cx| {
-        let app_view = cx.new(|cx| ui::AppView::new(cx));
+        let app_view = cx.new(ui::AppView::new);
         cx.new(|cx| gpui_component::Root::new(app_view, window, cx))
     })
     .expect("Failed to open the main window.");

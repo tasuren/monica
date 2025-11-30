@@ -59,11 +59,14 @@ impl Render for TitleBar {
             .border_b_1()
             .border_color(cx.theme().border)
             .pt_1()
-            .pl(px(80.))
             .pr_1()
             .child(
                 h_flex()
-                    .ml_auto()
+                    .when_else(
+                        cfg!(target_os = "macos"),
+                        |this| this.ml_auto(),
+                        |this| this.mr_auto(),
+                    )
                     .items_center()
                     .px_1()
                     .gap_1()
@@ -80,13 +83,13 @@ impl Render for TitleBar {
                             .custom(
                                 ButtonCustomVariant::new(cx)
                                     .foreground(gpui::red())
-                                    .active(gpui::white().alpha(0.3))
+                                    .active(gpui::white().alpha(0.3)),
                             )
                             .on_click(cx.listener(|_, _, _, cx| {
                                 GlobalState::update_global(cx, |state, cx| {
                                     state.canvas_manager().clear(cx);
                                 })
-                            }))
+                            })),
                     ),
             )
             .on_mouse_down(MouseButton::Left, |_event, window, _cx| {

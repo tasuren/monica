@@ -1,15 +1,19 @@
 pub trait WindowExt {
-    fn set_most_top(&self) {}
-
     fn set_hidden(&self, hidden: bool);
 
     fn set_ignore_cursor_events(&self, ignore: bool);
 }
 
+pub trait MacOSWindowExt {
+    fn setup_canvas_window(&self);
+
+    fn setup_main_window(&self);
+}
+
 #[cfg(target_os = "macos")]
 mod macos {
     use objc2::rc::Retained;
-    use objc2_app_kit::{NSView, NSWindow};
+    use objc2_app_kit::{NSColor, NSView, NSWindow, NSWindowCollectionBehavior, NSWindowLevel};
     use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 
     fn get_ns_window(window: &gpui::Window) -> Retained<NSWindow> {
@@ -27,17 +31,36 @@ mod macos {
     }
 
     impl super::WindowExt for gpui::Window {
-        fn set_most_top(&self) {
-            // Move front over canvas window level
-            get_ns_window(self).setLevel(objc2_app_kit::NSFloatingWindowLevel + 1);
-        }
-
         fn set_hidden(&self, hidden: bool) {
             get_ns_window(self).setIsVisible(hidden);
         }
 
         fn set_ignore_cursor_events(&self, ignore: bool) {
             get_ns_window(self).setIgnoresMouseEvents(ignore);
+        }
+    }
+
+    const CANVAS_WINDOW_LEVEL: NSWindowLevel = objc2_app_kit::NSStatusWindowLevel;
+
+    impl super::MacOSWindowExt for gpui::Window {
+        fn setup_canvas_window(&self) {
+            let ns_window = get_ns_window(self);
+
+            ns_window.setLevel(CANVAS_WINDOW_LEVEL);
+            ns_window.setCollectionBehavior(
+                NSWindowCollectionBehavior::CanJoinAllApplications
+                    | NSWindowCollectionBehavior::CanJoinAllSpaces
+                    | NSWindowCollectionBehavior::FullScreenAuxiliary,
+            );
+            ns_window.setMovable(false);
+
+            // Remove border and shadow.
+            ns_window.setOpaque(false);
+            ns_window.setBackgroundColor(Some(&NSColor::clearColor()));
+        }
+
+        fn setup_main_window(&self) {
+            get_ns_window(self).setLevel(CANVAS_WINDOW_LEVEL + 1);
         }
     }
 }

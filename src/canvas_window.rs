@@ -30,12 +30,16 @@ fn setup_canvas_window(cx: &mut App, display: Display) -> AnyWindowHandle {
         ..Default::default()
     };
 
-    let display_id = display.id;
-    *cx.open_window(window_options, |window, cx| {
-        window.set_most_top();
+    *cx.open_window(window_options, move |window, cx| {
         window.set_ignore_cursor_events(true);
 
-        CanvasView::new(cx, display_id)
+        #[cfg(target_os = "macos")]
+        {
+            use crate::platform_impl::MacOSWindowExt;
+            window.setup_canvas_window();
+        }
+
+        CanvasView::new(cx, display.id)
     })
     .expect("Failed to open paint window")
 }

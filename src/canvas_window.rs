@@ -31,14 +31,7 @@ fn setup_canvas_window(cx: &mut App, display: Display) -> AnyWindowHandle {
     };
 
     *cx.open_window(window_options, move |window, cx| {
-        window.set_ignore_cursor_events(true);
-
-        #[cfg(target_os = "macos")]
-        {
-            use crate::platform_impl::macos::MacOSWindowExt;
-
-            window.setup_canvas_window();
-        }
+        window.setup_canvas_window();
 
         CanvasView::new(cx, display.id)
     })

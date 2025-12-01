@@ -7,6 +7,7 @@ use crate::{
     canvas::{Tool, ToolState},
     canvas_orchestrator::CanvasOrchestrator,
     canvas_window_manager::CanvasWindowManager,
+    platform_impl::WindowExt,
 };
 
 mod canvas;
@@ -64,12 +65,7 @@ fn setup_main_window(cx: &mut App) -> WindowId {
 
     let main_window_handle = cx
         .open_window(window_options, move |window, cx| {
-            #[cfg(target_os = "macos")]
-            {
-                use platform_impl::macos::MacOSWindowExt;
-
-                window.setup_main_window();
-            }
+            window.setup_main_window();
 
             let app_view = ui_main::AppView::new(cx);
             cx.new(|cx| gpui_component::Root::new(app_view, window, cx))

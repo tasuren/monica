@@ -67,22 +67,25 @@ impl Render for CanvasView {
                     }
 
                     // Canvas draw tool
-                    if !matches!(event.pressed_button, Some(gpui::MouseButton::Left)) {
+                    if matches!(event.pressed_button, Some(gpui::MouseButton::Left)) {
                         orchestrator.update_canvas(cx, &display_id, |canvas, cx| {
-                            if canvas.is_painting() {
-                                canvas.flush();
-                            }
-
+                            canvas.draw(cx, event.position);
                             cx.notify();
                         });
+                    } else {
+                        orchestrator.action_canvas(cx, display_id, |canvas, cx| {
+                            let result = if canvas.is_painting() {
+                                canvas.flush();
+                                true
+                            } else {
+                                false
+                            };
 
-                        return;
+                            cx.notify();
+
+                            result
+                        });
                     };
-
-                    orchestrator.action_canvas(cx, display_id, |canvas, cx| {
-                        canvas.draw(cx, event.position);
-                        cx.notify();
-                    });
                 });
             })
     }

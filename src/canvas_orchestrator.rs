@@ -75,13 +75,15 @@ impl CanvasOrchestrator {
         &mut self,
         cx: &mut App,
         display_id: DisplayId,
-        f: impl FnOnce(&mut Canvas, &mut Context<'_, Canvas>),
+        f: impl FnOnce(&mut Canvas, &mut Context<'_, Canvas>) -> bool,
     ) {
         if let Some(canvas) = self.canvases.get_mut(&display_id) {
-            canvas.update(cx, f);
+            let action = canvas.update(cx, f);
 
-            self.action_history
-                .push_back(ActionScope::Display(display_id));
+            if action {
+                self.action_history
+                    .push_back(ActionScope::Display(display_id));
+            }
         }
     }
 

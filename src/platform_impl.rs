@@ -1,6 +1,8 @@
 pub trait WindowExt {
     fn set_most_top(&self) {}
 
+    fn set_hidden(&self, hidden: bool);
+
     fn set_ignore_cursor_events(&self, ignore: bool);
 }
 
@@ -28,6 +30,10 @@ mod macos {
         fn set_most_top(&self) {
             // Move front over canvas window level
             get_ns_window(self).setLevel(objc2_app_kit::NSFloatingWindowLevel + 1);
+        }
+
+        fn set_hidden(&self, hidden: bool) {
+            get_ns_window(self).setIsVisible(hidden);
         }
 
         fn set_ignore_cursor_events(&self, ignore: bool) {

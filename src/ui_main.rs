@@ -5,7 +5,10 @@ use gpui_component::{
     h_flex, v_flex,
 };
 
-use crate::canvas::{GlobalState, Tool};
+use crate::{
+    canvas::{Tool, ToolState},
+    canvas_orchestrator::CanvasOrchestrator,
+};
 
 pub struct AppView {
     title_bar: Entity<TitleBar>,
@@ -13,11 +16,11 @@ pub struct AppView {
 }
 
 impl AppView {
-    pub fn new(cx: &mut Context<'_, Self>) -> Self {
-        Self {
+    pub fn new(cx: &mut App) -> Entity<Self> {
+        cx.new(|cx| Self {
             title_bar: cx.new(|_| TitleBar),
             tool_select: cx.new(|_| ToolSelect),
-        }
+        })
     }
 }
 
@@ -72,9 +75,10 @@ impl Render for TitleBar {
                     .gap_1()
                     .child(
                         self.render_normal_button(cx, "undo-button", "icons/undo.svg")
-                            .on_click(cx.listener(|_view, _, _, cx| {
-                                GlobalState::update_global(cx, |state, cx| {
-                                    state.canvas_manager().undo(cx);
+                            .on_click(cx.listener(|_, _, _, cx| {
+                                CanvasOrchestrator::update_global(cx, |orchestrator, cx| {
+                                    orchestrator.undo(cx);
+                                    cx.notify();
                                 });
                             })),
                     )
@@ -86,9 +90,10 @@ impl Render for TitleBar {
                                     .active(gpui::white().alpha(0.3)),
                             )
                             .on_click(cx.listener(|_, _, _, cx| {
-                                GlobalState::update_global(cx, |state, cx| {
-                                    state.canvas_manager().clear(cx);
-                                })
+                                CanvasOrchestrator::update_global(cx, |orchestrator, cx| {
+                                    orchestrator.clear(cx);
+                                    cx.notify();
+                                });
                             })),
                     ),
             )
@@ -126,7 +131,7 @@ impl ToolSelect {
             .custom(ButtonCustomVariant::new(cx).active(gpui::white().alpha(0.3)))
             .size_10()
             .with_size(px(36.))
-            .selected(tool == GlobalState::global(cx).tool())
+            .selected(tool == ToolState::global(cx).tool())
             .rounded_xl()
     }
 }
@@ -157,7 +162,7 @@ impl Render for ToolSelect {
                 .on_click(cx.listener(|_, selected: &Vec<usize>, _, cx| {
                     let tool = Tool::from_number(*selected.first().unwrap());
 
-                    GlobalState::update_global(cx, |state, cx| {
+                    ToolState::update_global(cx, |state, cx| {
                         state.set_tool(cx, tool);
                     });
 

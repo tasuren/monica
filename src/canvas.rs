@@ -1,12 +1,8 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 
-use display_config::DisplayId;
-use gpui::{
-    AnyWindowHandle, App, AppContext, Entity, Hsla, PathBuilder, Pixels, Point, ReadGlobal,
-    UpdateGlobal, WeakEntity, Window, px,
-};
+use gpui::{App, Global, Hsla, PathBuilder, Pixels, Point, ReadGlobal, UpdateGlobal, Window, px};
 
-use crate::platform_impl::WindowExt;
+use crate::canvas_window_manager::CanvasWindowManager;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Tool {
@@ -22,19 +18,16 @@ impl Tool {
     }
 }
 
-pub struct GlobalState {
+pub struct ToolState {
     tool: Tool,
     pub color: Hsla,
-    canvas_manager: CanvasManager,
 }
 
-impl GlobalState {
-    pub fn new(tool: Tool, color: Hsla) -> Self {
-        Self {
-            color,
-            tool,
-            canvas_manager: CanvasManager::new(),
-        }
+impl Global for ToolState {}
+
+impl ToolState {
+    pub fn register_global(cx: &mut App, tool: Tool, color: Hsla) {
+        cx.set_global(Self { color, tool });
     }
 
     pub fn tool(&self) -> Tool {
@@ -44,102 +37,10 @@ impl GlobalState {
     pub fn set_tool(&mut self, cx: &mut App, tool: Tool) {
         self.tool = tool;
 
-        for canvas in self.canvas_manager.all.values() {
-            canvas
-                .update(cx, |canvas, cx| {
-                    canvas
-                        .window_handle
-                        .update(cx, |_, window, _| {
-                            window.set_ignore_cursor_events(!tool.is_canvas_related())
-                        })
-                        .unwrap();
-                })
-                .unwrap();
-        }
-    }
-
-    pub fn canvas_manager(&mut self) -> &mut CanvasManager {
-        &mut self.canvas_manager
-    }
-}
-
-impl gpui::Global for GlobalState {}
-
-pub enum UseScope {
-    OneDisplay(DisplayId),
-    All,
-}
-
-pub struct CanvasManager {
-    all: HashMap<DisplayId, WeakEntity<Canvas>>,
-    use_history: VecDeque<UseScope>,
-}
-
-impl CanvasManager {
-    pub fn new() -> Self {
-        Self {
-            all: HashMap::new(),
-            use_history: VecDeque::new(),
-        }
-    }
-
-    pub fn create_canvas(
-        &mut self,
-        cx: &mut App,
-        window: &mut Window,
-        display_id: DisplayId,
-    ) -> Entity<Canvas> {
-        let canvas = cx.new(|_| Canvas::new(display_id.clone(), window.window_handle()));
-        self.all.insert(display_id, canvas.downgrade());
-        canvas
-    }
-
-    fn use_canvas(&mut self, display_id: DisplayId) {
-        self.use_history.push_back(UseScope::OneDisplay(display_id));
-    }
-
-    pub fn undo(&mut self, cx: &mut App) -> bool {
-        if let Some(use_history) = self.use_history.pop_back() {
-            match use_history {
-                UseScope::All => {
-                    for canvas in self.all.values() {
-                        canvas
-                            .update(cx, |canvas, cx| {
-                                canvas.undo();
-                                cx.notify();
-                            })
-                            .unwrap();
-                    }
-                }
-                UseScope::OneDisplay(display_id) => {
-                    if let Some(canvas) = self.all.get(&display_id) {
-                        canvas
-                            .update(cx, |canvas, cx| {
-                                canvas.undo();
-                                cx.notify();
-                            })
-                            .unwrap();
-                    };
-                }
-            }
-
-            !self.use_history.is_empty()
-        } else {
-            false
-        }
-    }
-
-    pub fn clear(&mut self, cx: &mut App) {
-        for canvas in self.all.values() {
-            canvas
-                .update(cx, |canvas, cx| {
-                    canvas.clear();
-                    cx.notify();
-                })
-                .unwrap();
-        }
-
-        self.use_history.push_back(UseScope::All);
+        CanvasWindowManager::update_global(cx, |windows, cx| {
+            let canvas_action_mode = !tool.is_canvas_related();
+            windows.set_action_mode(cx, canvas_action_mode);
+        });
     }
 }
 
@@ -258,18 +159,14 @@ pub enum CanvasAction {
 }
 
 pub struct Canvas {
-    window_handle: AnyWindowHandle,
-    display_id: DisplayId,
     stack: VecDeque<CanvasAction>,
     painting: bool,
     highlight_pos: Option<Point<Pixels>>,
 }
 
 impl Canvas {
-    pub fn new(display_id: DisplayId, window_handle: AnyWindowHandle) -> Self {
+    pub fn new() -> Self {
         Self {
-            window_handle,
-            display_id,
             stack: VecDeque::new(),
             painting: false,
             highlight_pos: None,
@@ -339,7 +236,7 @@ impl Canvas {
     pub fn draw(&mut self, cx: &App, pos: Point<Pixels>) {
         if !self.painting {
             self.painting = true;
-            let state = GlobalState::global(cx);
+            let state = ToolState::global(cx);
 
             if state.tool == Tool::Eraser {
                 let mut eraser = CanvasEraser::new(px(20.));
@@ -366,20 +263,16 @@ impl Canvas {
         self.painting
     }
 
-    pub fn flush(&mut self, cx: &mut App) {
+    pub fn flush(&mut self) {
         self.painting = false;
-
-        GlobalState::update_global(cx, |state, _| {
-            state.canvas_manager().use_canvas(self.display_id.clone())
-        });
     }
 
-    fn undo(&mut self) {
+    pub fn undo(&mut self) {
         self.painting = false;
         self.stack.pop_back();
     }
 
-    fn clear(&mut self) {
+    pub fn clear(&mut self) {
         self.painting = false;
         self.stack.push_back(CanvasAction::Clear);
     }

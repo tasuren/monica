@@ -3413,7 +3413,9 @@ name = "monica"
 version = "1.0.0"
 dependencies = [
  "anyhow",
+ "async-channel 2.5.0",
  "display-config",
+ "dpi",
  "gpui",
  "gpui-component",
  "objc2",

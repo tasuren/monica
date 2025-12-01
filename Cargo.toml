@@ -10,6 +10,8 @@ gpui-component = "0.4.2"
 rust-embed = "8.9.0"
 raw-window-handle = "0.6.2"
 display-config = { git = "https://github.com/tasuren/display-config-rs.git" }
+dpi = "0.1"
+async-channel = "2.5.0"
 anyhow = "1.0"
 
 [target.'cfg(target_os = "macos")'.dependencies]

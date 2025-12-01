@@ -40,12 +40,18 @@ impl CanvasOrchestrator {
             match scope {
                 ActionScope::Display(display_id) => {
                     if let Some(canvas) = self.canvases.get(&display_id) {
-                        canvas.update(cx, |canvas, _| canvas.undo());
+                        canvas.update(cx, |canvas, cx| {
+                            canvas.undo();
+                            cx.notify();
+                        });
                     }
                 }
                 ActionScope::All => {
                     for canvas in self.canvases.values() {
-                        canvas.update(cx, |canvas, _| canvas.undo());
+                        canvas.update(cx, |canvas, cx| {
+                            canvas.undo();
+                            cx.notify();
+                        });
                     }
                 }
             };
@@ -54,7 +60,10 @@ impl CanvasOrchestrator {
 
     pub fn clear(&mut self, cx: &mut App) {
         for canvas in self.canvases.values() {
-            canvas.update(cx, |canvas, _| canvas.clear())
+            canvas.update(cx, |canvas, cx| {
+                canvas.clear();
+                cx.notify();
+            });
         }
 
         self.action_history.push_back(ActionScope::All);

@@ -78,7 +78,6 @@ impl Render for TitleBar {
                             .on_click(cx.listener(|_, _, _, cx| {
                                 CanvasOrchestrator::update_global(cx, |orchestrator, cx| {
                                     orchestrator.undo(cx);
-                                    cx.notify();
                                 });
                             })),
                     )
@@ -92,7 +91,6 @@ impl Render for TitleBar {
                             .on_click(cx.listener(|_, _, _, cx| {
                                 CanvasOrchestrator::update_global(cx, |orchestrator, cx| {
                                     orchestrator.clear(cx);
-                                    cx.notify();
                                 });
                             })),
                     ),

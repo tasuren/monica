@@ -41,7 +41,6 @@ fn setup(cx: &mut App) {
     .detach();
 }
 
-#[inline]
 fn setup_main_window(cx: &mut App) -> WindowId {
     let titlebar = Some(gpui::TitlebarOptions {
         title: Some("Monica - Controller".into()),

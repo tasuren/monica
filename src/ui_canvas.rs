@@ -33,7 +33,7 @@ impl CanvasView {
 }
 
 impl Render for CanvasView {
-    fn render(&mut self, _window: &mut gpui::Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, _window: &mut gpui::Window, _cx: &mut Context<Self>) -> impl IntoElement {
         let display_id = self.display_id.clone();
 
         div()
@@ -52,10 +52,12 @@ impl Render for CanvasView {
                 })
                 .bg(gpui::transparent_white()),
             )
-            .on_mouse_move(cx.listener(move |_, event: &MouseMoveEvent, _, cx| {
+            .on_mouse_move(move |event: &MouseMoveEvent, _, cx| {
                 let display_id = display_id.clone();
 
                 CanvasOrchestrator::update_global(cx, move |orchestrator, cx| {
+                    orchestrator.notify_old_working_canvas(cx, Some(&display_id));
+
                     // Highlight tool
                     if ToolState::global(cx).tool() == Tool::Highlight {
                         orchestrator.update_canvas(cx, &display_id, |canvas, cx| {
@@ -82,6 +84,6 @@ impl Render for CanvasView {
                         cx.notify();
                     });
                 });
-            }))
+            })
     }
 }

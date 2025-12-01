@@ -27,10 +27,15 @@ impl AppView {
 impl Render for AppView {
     fn render(&mut self, _window: &mut gpui::Window, _cx: &mut Context<Self>) -> impl IntoElement {
         v_flex()
-            .id("toolbar")
+            .id("main-window-view")
             .size_full()
             .child(self.title_bar.clone())
             .child(self.tool_select.clone())
+            .on_mouse_move(|_, _, cx| {
+                CanvasOrchestrator::update_global(cx, move |orchestrator, cx| {
+                    orchestrator.notify_old_working_canvas(cx, None);
+                });
+            })
     }
 }
 

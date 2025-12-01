@@ -40,7 +40,7 @@ mod macos {
         }
     }
 
-    const CANVAS_WINDOW_LEVEL: NSWindowLevel = objc2_app_kit::NSStatusWindowLevel;
+    const CANVAS_WINDOW_LEVEL: NSWindowLevel = objc2_app_kit::NSPopUpMenuWindowLevel + 1;
 
     impl super::MacOSWindowExt for gpui::Window {
         fn setup_canvas_window(&self) {

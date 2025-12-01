@@ -13,6 +13,7 @@ pub enum ActionScope {
 pub struct CanvasOrchestrator {
     canvases: HashMap<DisplayId, Entity<Canvas>>,
     action_history: VecDeque<ActionScope>,
+    cursor_display_pos: Option<DisplayId>,
 }
 
 impl Global for CanvasOrchestrator {}
@@ -22,6 +23,7 @@ impl CanvasOrchestrator {
         let orchestrator = Self {
             canvases: HashMap::new(),
             action_history: VecDeque::new(),
+            cursor_display_pos: None,
         };
 
         cx.set_global(orchestrator);
@@ -91,6 +93,35 @@ impl CanvasOrchestrator {
     ) {
         if let Some(canvas) = self.canvases.get_mut(display_id) {
             canvas.update(cx, f);
+        }
+    }
+
+    pub fn notify_old_working_canvas(&mut self, cx: &mut App, new_display_id: Option<&DisplayId>) {
+        if let Some(new_display_id) = new_display_id {
+            // When moving from one canvas window to another,
+            // the system redraws the previous window to ensure no highlights or other elements remain visible.
+            if self.cursor_display_pos.is_none() {
+                self.cursor_display_pos = Some(new_display_id.clone());
+                return;
+            }
+
+            if let Some(display_id) = self.cursor_display_pos.as_mut()
+                && display_id != new_display_id
+            {
+                let old_display_id = std::mem::replace(display_id, new_display_id.clone());
+
+                if let Some(canvas) = self.canvases.get(&old_display_id) {
+                    cx.notify(canvas.entity_id());
+                }
+            }
+        } else if let Some(canvas) = self
+            .cursor_display_pos
+            .take()
+            .and_then(|display_id| self.canvases.get(&display_id))
+        {
+            // When moving outside the canvas window,
+            // redraw the canvas to prevent highlights or other elements from remaining.
+            cx.notify(canvas.entity_id());
         }
     }
 }

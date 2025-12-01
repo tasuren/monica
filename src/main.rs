@@ -66,7 +66,7 @@ fn setup_main_window(cx: &mut App) -> WindowId {
         .open_window(window_options, move |window, cx| {
             #[cfg(target_os = "macos")]
             {
-                use platform_impl::MacOSWindowExt;
+                use platform_impl::macos::MacOSWindowExt;
 
                 window.setup_main_window();
             }

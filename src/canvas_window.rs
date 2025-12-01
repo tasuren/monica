@@ -35,7 +35,8 @@ fn setup_canvas_window(cx: &mut App, display: Display) -> AnyWindowHandle {
 
         #[cfg(target_os = "macos")]
         {
-            use crate::platform_impl::MacOSWindowExt;
+            use crate::platform_impl::macos::MacOSWindowExt;
+
             window.setup_canvas_window();
         }
 

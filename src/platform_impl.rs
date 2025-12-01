@@ -4,14 +4,8 @@ pub trait WindowExt {
     fn set_ignore_cursor_events(&self, ignore: bool);
 }
 
-pub trait MacOSWindowExt {
-    fn setup_canvas_window(&self);
-
-    fn setup_main_window(&self);
-}
-
 #[cfg(target_os = "macos")]
-mod macos {
+pub mod macos {
     use objc2::rc::Retained;
     use objc2_app_kit::{NSColor, NSView, NSWindow, NSWindowCollectionBehavior, NSWindowLevel};
     use raw_window_handle::{HasWindowHandle, RawWindowHandle};
@@ -46,9 +40,15 @@ mod macos {
         }
     }
 
+    pub trait MacOSWindowExt {
+        fn setup_canvas_window(&self);
+
+        fn setup_main_window(&self);
+    }
+
     const CANVAS_WINDOW_LEVEL: NSWindowLevel = objc2_app_kit::NSPopUpMenuWindowLevel + 1;
 
-    impl super::MacOSWindowExt for gpui::Window {
+    impl MacOSWindowExt for gpui::Window {
         fn setup_canvas_window(&self) {
             let ns_window = get_ns_window(self);
 

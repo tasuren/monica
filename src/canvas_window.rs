@@ -73,9 +73,7 @@ impl CanvasWindow {
 
     pub fn set_hidden(&self, cx: &mut App, hidden: bool) {
         self.window_handle
-            .update(cx, move |_, window, _| {
-                window.set_hidden(hidden);
-            })
+            .update(cx, move |_, window, _| window.set_hidden(hidden))
             .unwrap();
     }
 

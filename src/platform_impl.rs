@@ -32,7 +32,13 @@ mod macos {
 
     impl super::WindowExt for gpui::Window {
         fn set_hidden(&self, hidden: bool) {
-            get_ns_window(self).setIsVisible(hidden);
+            let ns_window = get_ns_window(self);
+
+            if hidden {
+                ns_window.orderOut(Some(&ns_window));
+            } else {
+                ns_window.makeKeyAndOrderFront(Some(&ns_window));
+            }
         }
 
         fn set_ignore_cursor_events(&self, ignore: bool) {

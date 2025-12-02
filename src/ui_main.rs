@@ -105,23 +105,13 @@ impl Render for TitleBar {
             )
             .when(cfg!(target_os = "windows"), |this| {
                 this.child(
-                    h_flex()
-                        .ml_auto()
-                        .gap_1()
-                        .child(
-                            div()
-                                .child(Icon::empty().path("icons/minus.svg").large())
-                                .on_mouse_down(MouseButton::Left, |_, window, _| {
-                                    window.minimize_window()
-                                }),
-                        )
-                        .child(
-                            div()
-                                .child(Icon::empty().path("icons/x.svg").large())
-                                .on_mouse_down(MouseButton::Left, |_, window, _| {
-                                    window.remove_window()
-                                }),
-                        ),
+                    h_flex().ml_auto().gap_1().child(
+                        div()
+                            .child(Icon::empty().path("icons/x.svg").large())
+                            .on_mouse_down(MouseButton::Left, |_, window, _| {
+                                window.remove_window()
+                            }),
+                    ),
                 )
             })
             .window_control_area(WindowControlArea::Drag)

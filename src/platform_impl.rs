@@ -102,18 +102,18 @@ pub mod windows {
         };
     }
 
-    fn manage_style_ex(hwnd: HWND, add_mode: bool, target_style_ex: WINDOW_EX_STYLE) {
-        let raw_style_ex = unsafe { GetWindowLongPtrW(hwnd, GWL_EXSTYLE) };
-        let mut style_ex = WINDOW_EX_STYLE(raw_style_ex as _);
+    fn manage_ex_style(hwnd: HWND, add_mode: bool, target_ex_style: WINDOW_EX_STYLE) {
+        let raw_ex_style = unsafe { GetWindowLongPtrW(hwnd, GWL_EXSTYLE) };
+        let mut ex_style = WINDOW_EX_STYLE(raw_ex_style as _);
 
         if add_mode {
-            style_ex |= target_style_ex;
+            ex_style |= target_ex_style;
         } else {
-            style_ex &= !target_style_ex;
+            ex_style &= !target_ex_style;
         }
 
         unsafe {
-            _ = SetWindowLongPtrW(hwnd, GWL_EXSTYLE, style_ex.0 as _);
+            _ = SetWindowLongPtrW(hwnd, GWL_EXSTYLE, ex_style.0 as _);
         };
     }
 
@@ -135,7 +135,14 @@ pub mod windows {
         fn setup_main_window(&self) {
             // I don't know why, but gpui floating and popup window
             // doesn't make itself topmost. Then we do this ourselves.
-            set_always_on_top(get_hwnd(self));
+            let hwnd = get_hwnd(self);
+            set_always_on_top(hwnd);
+            
+            // Set the window as no activate.
+            manage_ex_style(hwnd, true, WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE);
+
+            // Hide on task-bar
+            manage_ex_style(hwnd, false, WS_EX_APPWINDOW);
         }
 
         fn setup_canvas_window(&self) {
@@ -145,7 +152,7 @@ pub mod windows {
             manage_style(hwnd, false, WS_BORDER);
 
             manage_style(hwnd, true, WS_POPUP);
-            manage_style_ex(
+            manage_ex_style(
                 hwnd,
                 true,
                 WS_EX_NOACTIVATE | WS_EX_TRANSPARENT | WS_EX_LAYERED,
@@ -164,7 +171,7 @@ pub mod windows {
 
         fn set_ignore_cursor_events(&self, ignore: bool) {
             let hwnd = get_hwnd(self);
-            manage_style_ex(hwnd, ignore, WS_EX_TRANSPARENT | WS_EX_LAYERED);
+            manage_ex_style(hwnd, ignore, WS_EX_TRANSPARENT | WS_EX_LAYERED);
         }
     }
 

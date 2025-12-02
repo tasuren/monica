@@ -26,9 +26,7 @@ impl CanvasOrchestrator {
             cursor_display_pos: None,
         };
         cx.set_global(orchestrator);
-
     }
-
 
     pub fn add_canvas(&mut self, cx: &mut App, display_id: DisplayId) {
         self.canvases.insert(display_id, cx.new(|_| Canvas::new()));
@@ -113,8 +111,8 @@ impl CanvasOrchestrator {
             {
                 let old_display_id = std::mem::replace(display_id, new_display_id.clone());
 
-                if let Some(canvas) = self.canvases.get(&old_display_id) {
-                    cx.notify(canvas.entity_id());
+                if let Some(old_canvas) = self.canvases.get(&old_display_id) {
+                    cx.notify(old_canvas.entity_id());
                 }
             }
         } else if let Some(canvas) = self

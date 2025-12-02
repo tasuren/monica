@@ -78,29 +78,29 @@ impl CanvasWindowManager {
 
     async fn listener(cx: &mut AsyncApp, rx: async_channel::Receiver<DisplayEvent>) {
         while let Ok(event) = rx.recv().await {
-            cx.update_global(|windows: &mut Self, cx| match event {
+            cx.update_global(|this: &mut Self, cx| match event {
                 DisplayEvent::Added(display) => {
                     let id = display.id.clone();
                     let window = CanvasWindow::new(cx, display);
-                    windows.windows.insert(id, window);
+                    this.windows.insert(id, window);
                 }
                 DisplayEvent::Removed(display_id) => {
-                    if let Some(window) = windows.windows.remove(&display_id) {
+                    if let Some(window) = this.windows.remove(&display_id) {
                         window.close(cx);
                     }
                 }
                 DisplayEvent::SizeChanged { display, after, .. } => {
-                    if let Some(window) = windows.windows.get(&display.id) {
+                    if let Some(window) = this.windows.get(&display.id) {
                         window.set_size(cx, after);
                     }
                 }
                 DisplayEvent::Mirrored(display) => {
-                    if let Some(window) = windows.windows.get(&display.id) {
+                    if let Some(window) = this.windows.get(&display.id) {
                         window.set_hidden(cx, true);
                     }
                 }
                 DisplayEvent::UnMirrored(display) => {
-                    if let Some(window) = windows.windows.get(&display.id) {
+                    if let Some(window) = this.windows.get(&display.id) {
                         window.set_hidden(cx, false);
                     }
                 }

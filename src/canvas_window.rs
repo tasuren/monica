@@ -77,17 +77,20 @@ impl CanvasWindow {
 
         use crate::canvas_orchestrator::CanvasOrchestrator;
 
-        let scale_factor = cx
-            .update_window(self.window_handle, |_, window, _| window.scale_factor())
+        let (window_bounds, scale_factor) = cx
+            .update_window(self.window_handle, |_, window, _| {
+                (window.bounds(), window.scale_factor())
+            })
             .unwrap();
 
-        // Without offset, the cursor highlight get a little off.
-        const CURSOR_OFFSET_X: f32 = 5.;
-        const CURSOR_OFFSET_Y: f32 = 3.;
-        let mouse_pos = point(
-            px(x / scale_factor + CURSOR_OFFSET_X),
-            px(y / scale_factor + CURSOR_OFFSET_Y),
-        );
+        let mut mouse_pos = point(px(x / scale_factor), px(y / scale_factor));
+        if !window_bounds.contains(&mouse_pos) {
+            // If there are no mouse on this canvas window, do nothing.
+            return;
+        }
+
+        mouse_pos.x -= window_bounds.origin.x;
+        mouse_pos.y -= window_bounds.origin.y;
 
         cx.update_entity(&self._view, |view, cx| {
             CanvasOrchestrator::update_global(cx, |orchestrator, cx| {

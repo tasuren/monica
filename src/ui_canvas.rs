@@ -96,8 +96,6 @@ impl Render for CanvasView {
                     let display_id = display_id.clone();
 
                     move |_, _, window, cx| {
-                        println!("redraw");
-
                         CanvasOrchestrator::update_global(cx, |orchestrator, cx| {
                             orchestrator
                                 .update_canvas(cx, &display_id, |canvas, _| canvas.paint(window));

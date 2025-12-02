@@ -94,6 +94,8 @@ impl CanvasView {
         orchestrator: &mut CanvasOrchestrator,
         mouse_pos: Point<Pixels>,
     ) {
+        orchestrator.notify_old_working_canvas(cx, Some(&self.display_id));
+
         if ToolState::global(cx).tool() == Tool::Highlight {
             orchestrator.update_canvas(cx, &self.display_id, |canvas, cx| {
                 canvas.set_highlight(mouse_pos);
@@ -127,8 +129,6 @@ impl Render for CanvasView {
                 let display_id = display_id.clone();
 
                 CanvasOrchestrator::update_global(cx, move |orchestrator, cx| {
-                    orchestrator.notify_old_working_canvas(cx, Some(&display_id));
-
                     #[cfg(not(target_os = "windows"))]
                     _view.on_mouse_move_whenever_window_inactive(cx, orchestrator, event.position);
 

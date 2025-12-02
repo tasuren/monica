@@ -101,7 +101,9 @@ impl Render for TitleBar {
                                     orchestrator.clear(cx);
                                 });
                             })),
-                    ),
+                    )
+                    .window_control_area(WindowControlArea::Min)
+                    .window_control_area(WindowControlArea::Close),
             )
             .window_control_area(WindowControlArea::Drag)
             .on_mouse_down(MouseButton::Left, |_event, window, _cx| {

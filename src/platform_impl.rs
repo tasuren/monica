@@ -133,6 +133,8 @@ pub mod windows {
 
     impl super::WindowExt for gpui::Window {
         fn setup_main_window(&self) {
+            // I don't know why, but gpui floating and popup window
+            // doesn't make itself topmost. Then we do this ourselves.
             set_always_on_top(get_hwnd(self));
         }
 

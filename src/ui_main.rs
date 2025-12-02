@@ -1,6 +1,6 @@
 use gpui::{
-    App, ElementId, Entity, MouseButton, ReadGlobal, UpdateGlobal, WindowControlArea, prelude::*,
-    px,
+    App, ElementId, Entity, MouseButton, ReadGlobal, UpdateGlobal, WindowControlArea, div,
+    prelude::*, px,
 };
 use gpui_component::{
     ActiveTheme, Icon, Selectable, Sizable,
@@ -101,10 +101,29 @@ impl Render for TitleBar {
                                     orchestrator.clear(cx);
                                 });
                             })),
-                    )
-                    .window_control_area(WindowControlArea::Min)
-                    .window_control_area(WindowControlArea::Close),
+                    ),
             )
+            .when(cfg!(target_os = "windows"), |this| {
+                this.child(
+                    h_flex()
+                        .ml_auto()
+                        .gap_1()
+                        .child(
+                            div()
+                                .child(Icon::empty().path("icons/minus.svg").large())
+                                .on_mouse_down(MouseButton::Left, |_, window, _| {
+                                    window.minimize_window()
+                                }),
+                        )
+                        .child(
+                            div()
+                                .child(Icon::empty().path("icons/x.svg").large())
+                                .on_mouse_down(MouseButton::Left, |_, window, _| {
+                                    window.remove_window()
+                                }),
+                        ),
+                )
+            })
             .window_control_area(WindowControlArea::Drag)
             .on_mouse_down(MouseButton::Left, |_event, window, _cx| {
                 window.start_window_move();

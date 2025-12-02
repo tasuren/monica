@@ -29,6 +29,37 @@ impl CanvasWindowManager {
 
         cx.spawn(async move |cx| Self::listener(cx, rx).await)
             .detach();
+
+        #[cfg(target_os = "windows")]
+        cx.spawn({
+            // On windows, `on_mouse_move` event will not be dispatched when the window is not inactive.
+            // So we need to manually dispatch the event to all canvases to support the highlight tool.
+
+            async move |cx| Self::dispatch_mouse_move_event_manually(cx).await
+        })
+        .detach();
+    }
+
+    #[cfg(target_os = "windows")]
+    async fn dispatch_mouse_move_event_manually(cx: &mut gpui::AsyncApp) {
+        use device_query::{DeviceEvents, DeviceEventsHandler};
+
+        let handler = DeviceEventsHandler::new(std::time::Duration::from_millis(10))
+            .expect("Failed to create device event handler");
+
+        let (tx, rx) = async_channel::unbounded();
+        let _mouse_move_guard = handler.on_mouse_move(move |(x, y)| {
+            _ = tx.send_blocking((*x as f32, *y as f32));
+        });
+
+        while let Ok((x, y)) = rx.recv().await {
+            cx.update_global(|window_manager: &mut Self, cx| {
+                for window in window_manager.windows.values() {
+                    window.on_mouse_move(cx, x, y);
+                }
+            })
+            .unwrap();
+        }
     }
 
     fn setup_canvas_windows(cx: &mut App) -> HashMap<DisplayId, CanvasWindow> {

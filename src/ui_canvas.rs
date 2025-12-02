@@ -10,13 +10,14 @@ use crate::{
 };
 
 pub struct CanvasView {
+    _window_handle: AnyWindowHandle,
     display_id: DisplayId,
 }
 
 impl CanvasView {
     pub fn new(
         cx: &mut App,
-        _window_handle: AnyWindowHandle,
+        window_handle: AnyWindowHandle,
         display_id: DisplayId,
     ) -> Entity<Self> {
         CanvasOrchestrator::update_global(cx, {
@@ -27,18 +28,10 @@ impl CanvasView {
             }
         });
 
-        let view = cx.new(|_| Self { display_id });
-
-        #[cfg(target_os = "windows")]
-        cx.spawn({
-            // On windows, `on_mouse_move` event will not be dispatched when the window is not inactive.
-            // So we need to dispatch the event manually to support the highlight tool.
-
-            let view = view.clone();
-            async move |cx| Self::dispatch_mouse_move_event_manually(cx, _window_handle, view).await
-        })
-        .detach();
-
+        let view = cx.new(|_| Self {
+            _window_handle: window_handle,
+            display_id,
+        });
         cx.observe_release(&view, |view, cx| {
             CanvasOrchestrator::update_global(cx, |orchestrator, _| {
                 orchestrator.remove_canvas(&view.display_id);
@@ -47,45 +40,6 @@ impl CanvasView {
         .detach();
 
         view
-    }
-
-    #[cfg(target_os = "windows")]
-    pub async fn dispatch_mouse_move_event_manually(
-        cx: &mut gpui::AsyncApp,
-        window_handle: AnyWindowHandle,
-        view: Entity<Self>,
-    ) {
-        use device_query::{DeviceEvents, DeviceEventsHandler};
-        use gpui::{point, px};
-
-        let handler = DeviceEventsHandler::new(std::time::Duration::from_millis(10))
-            .expect("Failed to create device event handler.");
-
-        let (tx, rx) = async_channel::unbounded();
-        let _mouse_move_guard = handler.on_mouse_move(move |(x, y)| {
-            _ = tx.send_blocking((*x as f32, *y as f32));
-        });
-
-        while let Ok((x, y)) = rx.recv().await {
-            let scale_factor = cx
-                .update_window(window_handle, |_, window, _| window.scale_factor())
-                .unwrap();
-
-            // Without offset, the cursor highlight get a little off.
-            const CURSOR_OFFSET_X: f32 = 5.;
-            const CURSOR_OFFSET_Y: f32 = 3.;
-            let mouse_pos = point(
-                px(x / scale_factor + CURSOR_OFFSET_X),
-                px(y / scale_factor + CURSOR_OFFSET_Y),
-            );
-
-            cx.update_entity(&view, |view, cx| {
-                CanvasOrchestrator::update_global(cx, |orchestrator, cx| {
-                    view.on_mouse_move_whenever_window_inactive(cx, orchestrator, mouse_pos);
-                });
-            })
-            .unwrap();
-        }
     }
 
     pub fn on_mouse_move_whenever_window_inactive(

@@ -1,5 +1,5 @@
 use display_config::{Display, DisplayId};
-use gpui::{AnyWindowHandle, App};
+use gpui::{AnyWindowHandle, App, Entity};
 
 use crate::{
     platform_impl::WindowExt,
@@ -10,17 +10,25 @@ use crate::{
 pub struct CanvasWindow {
     _display_id: DisplayId,
     window_handle: AnyWindowHandle,
+    _view: Entity<CanvasView>,
 }
 
 impl CanvasWindow {
     pub fn new(cx: &mut App, display: Display) -> Self {
+        let display_id = display.id.clone();
+        let (window_handle, view) = Self::setup_canvas_window(cx, display);
+
         Self {
-            _display_id: display.id.clone(),
-            window_handle: Self::setup_canvas_window(cx, display),
+            _display_id: display_id,
+            window_handle,
+            _view: view,
         }
     }
 
-    fn setup_canvas_window(cx: &mut App, display: Display) -> AnyWindowHandle {
+    fn setup_canvas_window(
+        cx: &mut App,
+        display: Display,
+    ) -> (AnyWindowHandle, Entity<CanvasView>) {
         let bounds = gpui::Bounds::new(
             utils::dpi_pos_to_gpui(display.origin),
             utils::dpi_size_to_gpui(display.size),
@@ -37,23 +45,55 @@ impl CanvasWindow {
             ..Default::default()
         };
 
-        *cx.open_window(window_options, move |window, cx| {
-            window.setup_canvas_window();
+        let mut created_view = std::cell::OnceCell::new();
+        let handle = *cx
+            .open_window(window_options, |window, cx| {
+                window.setup_canvas_window();
 
-            #[cfg(target_os = "windows")]
-            {
-                // NOTE: `window_bounds` is not working on Windows so we move the window manually.
+                #[cfg(target_os = "windows")]
+                {
+                    // NOTE: `window_bounds` is not working on Windows so we move the window manually.
 
-                use crate::platform_impl::windows::WindowsWindowExt;
+                    use crate::platform_impl::windows::WindowsWindowExt;
 
-                let origin = display.origin;
-                let size = display.size;
-                window.set_window_rect(origin.x, origin.y, size.width as _, size.height as _);
-            }
+                    let origin = display.origin;
+                    let size = display.size;
+                    window.set_window_rect(origin.x, origin.y, size.width as _, size.height as _);
+                }
 
-            CanvasView::new(cx, window.window_handle(), display.id)
-        })
-        .expect("Failed to open paint window")
+                let view = CanvasView::new(cx, window.window_handle(), display.id);
+                created_view.set(view.clone()).unwrap();
+
+                view
+            })
+            .expect("Failed to open paint window");
+
+        (handle, created_view.take().unwrap())
+    }
+
+    #[cfg(target_os = "windows")]
+    pub fn on_mouse_move(&self, cx: &mut App, x: f32, y: f32) {
+        use gpui::{AppContext, UpdateGlobal, point, px};
+
+        use crate::canvas_orchestrator::CanvasOrchestrator;
+
+        let scale_factor = cx
+            .update_window(self.window_handle, |_, window, _| window.scale_factor())
+            .unwrap();
+
+        // Without offset, the cursor highlight get a little off.
+        const CURSOR_OFFSET_X: f32 = 5.;
+        const CURSOR_OFFSET_Y: f32 = 3.;
+        let mouse_pos = point(
+            px(x / scale_factor + CURSOR_OFFSET_X),
+            px(y / scale_factor + CURSOR_OFFSET_Y),
+        );
+
+        cx.update_entity(&self._view, |view, cx| {
+            CanvasOrchestrator::update_global(cx, |orchestrator, cx| {
+                view.on_mouse_move_whenever_window_inactive(cx, orchestrator, mouse_pos);
+            });
+        });
     }
 
     pub fn set_ignore_cursor_events(&self, cx: &mut App, ignore: bool) {

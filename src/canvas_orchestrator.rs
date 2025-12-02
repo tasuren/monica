@@ -25,9 +25,10 @@ impl CanvasOrchestrator {
             action_history: VecDeque::new(),
             cursor_display_pos: None,
         };
-
         cx.set_global(orchestrator);
+
     }
+
 
     pub fn add_canvas(&mut self, cx: &mut App, display_id: DisplayId) {
         self.canvases.insert(display_id, cx.new(|_| Canvas::new()));

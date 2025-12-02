@@ -12,38 +12,37 @@ pub struct CanvasWindow {
     window_handle: AnyWindowHandle,
 }
 
-#[inline]
-fn setup_canvas_window(cx: &mut App, display: Display) -> AnyWindowHandle {
-    let bounds = gpui::Bounds::new(
-        utils::dpi_pos_to_gpui(display.origin),
-        utils::dpi_size_to_gpui(display.size),
-    );
-    let window_bounds = Some(gpui::WindowBounds::Windowed(bounds));
-
-    let window_options = gpui::WindowOptions {
-        titlebar: None,
-        kind: gpui::WindowKind::PopUp,
-        app_id: Some(crate::APP_IDENTIFIER.to_owned()),
-        window_background: gpui::WindowBackgroundAppearance::Transparent,
-        window_bounds,
-        focus: false,
-        ..Default::default()
-    };
-
-    *cx.open_window(window_options, move |window, cx| {
-        window.setup_canvas_window();
-
-        CanvasView::new(cx, display.id)
-    })
-    .expect("Failed to open paint window")
-}
-
 impl CanvasWindow {
     pub fn new(cx: &mut App, display: Display) -> Self {
         Self {
             _display_id: display.id.clone(),
-            window_handle: setup_canvas_window(cx, display),
+            window_handle: Self::setup_canvas_window(cx, display),
         }
+    }
+
+    fn setup_canvas_window(cx: &mut App, display: Display) -> AnyWindowHandle {
+        let bounds = gpui::Bounds::new(
+            utils::dpi_pos_to_gpui(display.origin),
+            utils::dpi_size_to_gpui(display.size),
+        );
+        let window_bounds = Some(gpui::WindowBounds::Windowed(bounds));
+
+        let window_options = gpui::WindowOptions {
+            titlebar: None,
+            kind: gpui::WindowKind::PopUp,
+            app_id: Some(crate::APP_IDENTIFIER.to_owned()),
+            window_background: gpui::WindowBackgroundAppearance::Transparent,
+            window_bounds,
+            focus: false,
+            ..Default::default()
+        };
+
+        *cx.open_window(window_options, move |window, cx| {
+            window.setup_canvas_window();
+
+            CanvasView::new(cx, display.id)
+        })
+        .expect("Failed to open paint window")
     }
 
     pub fn set_ignore_cursor_events(&self, cx: &mut App, ignore: bool) {

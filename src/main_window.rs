@@ -8,6 +8,11 @@ impl Global for MainWindow {}
 
 impl MainWindow {
     pub fn register_global(cx: &mut App) {
+        let window = Self(Self::setup_main_window(cx));
+        cx.set_global(window);
+    }
+
+    fn setup_main_window(cx: &mut App) -> AnyWindowHandle {
         let titlebar = Some(gpui::TitlebarOptions {
             title: Some("Monica - Controller".into()),
             appears_transparent: true,
@@ -25,17 +30,13 @@ impl MainWindow {
             ..Default::default()
         };
 
-        let main_window_handle = cx
-            .open_window(window_options, move |window, cx| {
-                window.setup_main_window();
+        *cx.open_window(window_options, move |window, cx| {
+            window.setup_main_window();
 
-                let app_view = crate::ui_main::AppView::new(cx);
-                cx.new(|cx| gpui_component::Root::new(app_view, window, cx))
-            })
-            .expect("Failed to open the main window.");
-
-        let window = Self(*main_window_handle);
-        cx.set_global(window);
+            let app_view = crate::ui_main::AppView::new(cx);
+            cx.new(|cx| gpui_component::Root::new(app_view, window, cx))
+        })
+        .expect("Failed to open the main window.")
     }
 
     pub fn handle(&self) -> AnyWindowHandle {

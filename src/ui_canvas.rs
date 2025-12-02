@@ -1,6 +1,6 @@
 use display_config::DisplayId;
 use gpui::{
-    App, Entity, MouseMoveEvent, Pixels, Point, ReadGlobal, UpdateGlobal, canvas, div, point,
+    App, Entity, MouseMoveEvent, Pixels, Point, ReadGlobal, UpdateGlobal, canvas, div
     prelude::*,
 };
 
@@ -34,7 +34,7 @@ impl CanvasView {
 
             async move |cx| {
                 use device_query::{DeviceEvents, DeviceEventsHandler};
-                use gpui::px;
+                use gpui::{px, point};
 
                 let handler = DeviceEventsHandler::new(std::time::Duration::from_millis(10))
                     .expect("Failed to create device event handler.");

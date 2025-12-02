@@ -1,4 +1,7 @@
-use gpui::{App, ElementId, Entity, MouseButton, ReadGlobal, UpdateGlobal, prelude::*, px};
+use gpui::{
+    App, ElementId, Entity, MouseButton, ReadGlobal, UpdateGlobal, WindowControlArea, prelude::*,
+    px,
+};
 use gpui_component::{
     ActiveTheme, Icon, Selectable, Sizable,
     button::{Button, ButtonCustomVariant, ButtonGroup, ButtonVariants},
@@ -100,6 +103,7 @@ impl Render for TitleBar {
                             })),
                     ),
             )
+            .window_control_area(WindowControlArea::Drag)
             .on_mouse_down(MouseButton::Left, |_event, window, _cx| {
                 window.start_window_move();
             })

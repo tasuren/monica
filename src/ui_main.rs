@@ -69,8 +69,8 @@ impl Render for TitleBar {
             .bg(cx.theme().title_bar)
             .border_b_1()
             .border_color(cx.theme().border)
-            .pt_1()
-            .pr_1()
+            .py_1()
+            .px_1()
             .child(
                 h_flex()
                     .when_else(

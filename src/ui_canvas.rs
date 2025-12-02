@@ -1,6 +1,7 @@
 use display_config::DisplayId;
 use gpui::{
-    App, Entity, MouseMoveEvent, Pixels, Point, ReadGlobal, UpdateGlobal, canvas, div, prelude::*,
+    AnyWindowHandle, App, Entity, MouseMoveEvent, Pixels, Point, ReadGlobal, UpdateGlobal, canvas,
+    div, prelude::*,
 };
 
 use crate::{
@@ -13,7 +14,11 @@ pub struct CanvasView {
 }
 
 impl CanvasView {
-    pub fn new(cx: &mut App, display_id: DisplayId) -> Entity<Self> {
+    pub fn new(
+        cx: &mut App,
+        _window_handle: AnyWindowHandle,
+        display_id: DisplayId,
+    ) -> Entity<Self> {
         CanvasOrchestrator::update_global(cx, {
             let display_id = display_id.clone();
 
@@ -30,32 +35,7 @@ impl CanvasView {
             // So we need to dispatch the event manually to support the highlight tool.
 
             let view = view.clone();
-
-            async move |cx| {
-                use device_query::{DeviceEvents, DeviceEventsHandler};
-                use gpui::{point, px};
-
-                let handler = DeviceEventsHandler::new(std::time::Duration::from_millis(10))
-                    .expect("Failed to create device event handler.");
-
-                let (tx, rx) = async_channel::unbounded();
-                let _mouse_move_guard = handler.on_mouse_move(move |(x, y)| {
-                    _ = tx.send_blocking(point(px(*x as _), px(*y as _)));
-                });
-
-                while let Ok(mouse_pos) = rx.recv().await {
-                    cx.update_entity(&view, |view, cx| {
-                        CanvasOrchestrator::update_global(cx, |orchestrator, cx| {
-                            view.on_mouse_move_whenever_window_inactive(
-                                cx,
-                                orchestrator,
-                                mouse_pos,
-                            );
-                        });
-                    })
-                    .unwrap();
-                }
-            }
+            async move |cx| Self::dispatch_mouse_move_event_manually(cx, _window_handle, view).await
         })
         .detach();
 
@@ -67,6 +47,45 @@ impl CanvasView {
         .detach();
 
         view
+    }
+
+    #[cfg(target_os = "windows")]
+    pub async fn dispatch_mouse_move_event_manually(
+        cx: &mut gpui::AsyncApp,
+        window_handle: AnyWindowHandle,
+        view: Entity<Self>,
+    ) {
+        use device_query::{DeviceEvents, DeviceEventsHandler};
+        use gpui::{point, px};
+
+        let handler = DeviceEventsHandler::new(std::time::Duration::from_millis(10))
+            .expect("Failed to create device event handler.");
+
+        let (tx, rx) = async_channel::unbounded();
+        let _mouse_move_guard = handler.on_mouse_move(move |(x, y)| {
+            _ = tx.send_blocking((*x as f32, *y as f32));
+        });
+
+        while let Ok((x, y)) = rx.recv().await {
+            let scale_factor = cx
+                .update_window(window_handle, |_, window, _| window.scale_factor())
+                .unwrap();
+
+            // Without offset, the cursor highlight get a little off.
+            const CURSOR_OFFSET_X: f32 = 5.;
+            const CURSOR_OFFSET_Y: f32 = 3.;
+            let mouse_pos = point(
+                px(x / scale_factor + CURSOR_OFFSET_X),
+                px(y / scale_factor + CURSOR_OFFSET_Y),
+            );
+
+            cx.update_entity(&view, |view, cx| {
+                CanvasOrchestrator::update_global(cx, |orchestrator, cx| {
+                    view.on_mouse_move_whenever_window_inactive(cx, orchestrator, mouse_pos);
+                });
+            })
+            .unwrap();
+        }
     }
 
     pub fn on_mouse_move_whenever_window_inactive(

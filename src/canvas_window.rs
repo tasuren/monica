@@ -51,7 +51,7 @@ impl CanvasWindow {
                 window.set_window_rect(origin.x, origin.y, size.width as _, size.height as _);
             }
 
-            CanvasView::new(cx, display.id)
+            CanvasView::new(cx, window.window_handle(), display.id)
         })
         .expect("Failed to open paint window")
     }

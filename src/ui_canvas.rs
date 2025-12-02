@@ -1,6 +1,6 @@
 use display_config::DisplayId;
 use gpui::{
-    App, Entity, MouseMoveEvent, Pixels, Point, ReadGlobal, UpdateGlobal, canvas, div
+    App, Entity, MouseMoveEvent, Pixels, Point, ReadGlobal, UpdateGlobal, canvas, div,
     prelude::*,
 };
 

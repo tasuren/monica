@@ -208,6 +208,7 @@ impl Canvas {
 
         // Cursor highlight
         if let Some(pos) = self.highlight_pos.take() {
+            println!("{:?}", pos);
             let cx = pos.x;
             let cy = pos.y;
             let r = px(20.0);

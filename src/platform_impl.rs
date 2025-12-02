@@ -70,10 +70,99 @@ pub mod macos {
 }
 
 #[cfg(target_os = "windows")]
-mod windows {
+pub mod windows {
+    use raw_window_handle::{HasWindowHandle, RawWindowHandle};
+    use windows::Win32::{Foundation::HWND, UI::WindowsAndMessaging::*};
+
+    fn get_hwnd(window: &gpui::Window) -> HWND {
+        let handle = HasWindowHandle::window_handle(window).unwrap().as_raw();
+
+        match handle {
+            RawWindowHandle::Win32(handle) => HWND(handle.hwnd.get() as _),
+            _ => unreachable!(),
+        }
+    }
+
+    fn manage_style_ex(hwnd: HWND, add_mode: bool, target_style_ex: WINDOW_EX_STYLE) {
+        let raw_style_ex = unsafe { GetWindowLongPtrW(hwnd, GWL_EXSTYLE) };
+        let mut style_ex = WINDOW_EX_STYLE(raw_style_ex as _);
+
+        if add_mode {
+            style_ex |= target_style_ex;
+        } else {
+            style_ex &= !target_style_ex;
+        }
+
+        unsafe {
+            _ = SetWindowLongPtrW(hwnd, GWL_EXSTYLE, style_ex.0 as _);
+        };
+    }
+
+    fn set_always_on_top(hwnd: HWND) {
+        unsafe {
+            _ = SetWindowPos(
+                hwnd,
+                Some(HWND_TOPMOST),
+                0,
+                0,
+                0,
+                0,
+                SWP_ASYNCWINDOWPOS | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
+            );
+        }
+    }
+
     impl super::WindowExt for gpui::Window {
+        fn setup_main_window(&self) {
+            set_always_on_top(get_hwnd(self));
+        }
+
+        fn setup_canvas_window(&self) {
+            let hwnd = get_hwnd(self);
+
+            manage_style_ex(
+                hwnd,
+                true,
+                WS_EX_NOACTIVATE | WS_EX_TRANSPARENT | WS_EX_LAYERED,
+            );
+            set_always_on_top(hwnd);
+
+            unsafe {
+                _ = ShowWindow(hwnd, SW_SHOWNOACTIVATE);
+            };
+        }
+
+        fn set_hidden(&self, hidden: bool) {
+            let hwnd = get_hwnd(self);
+
+            unsafe {
+                _ = ShowWindow(hwnd, if hidden { SW_HIDE } else { SW_SHOWNOACTIVATE });
+            };
+        }
+
         fn set_ignore_cursor_events(&self, ignore: bool) {
-            unimplemented!()
+            let hwnd = get_hwnd(self);
+            manage_style_ex(hwnd, ignore, WS_EX_TRANSPARENT | WS_EX_LAYERED);
+        }
+    }
+
+    pub trait WindowsWindowExt {
+        fn set_window_pos_top(&self);
+    }
+
+    impl WindowsWindowExt for gpui::Window {
+        fn set_window_pos_top(&self) {
+            unsafe {
+                _ = SetWindowPos(
+                    get_hwnd(self),
+                    Some(HWND_TOP),
+                    0,
+                    0,
+                    0,
+                    0,
+                    SWP_ASYNCWINDOWPOS | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
+                );
+            }
         }
     }
 }

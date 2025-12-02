@@ -65,13 +65,11 @@ impl CanvasWindowManager {
                 }
                 DisplayEvent::Mirrored(display) => {
                     if let Some(window) = windows.windows.get(&display.id) {
-                        println!("aa");
                         window.set_hidden(cx, true);
                     }
                 }
                 DisplayEvent::UnMirrored(display) => {
                     if let Some(window) = windows.windows.get(&display.id) {
-                        println!("bb");
                         window.set_hidden(cx, false);
                     }
                 }

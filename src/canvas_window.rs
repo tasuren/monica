@@ -40,6 +40,17 @@ impl CanvasWindow {
         *cx.open_window(window_options, move |window, cx| {
             window.setup_canvas_window();
 
+            #[cfg(target_os = "windows")]
+            {
+                // NOTE: `window_bounds` is not working on Windows so we move the window manually.
+
+                use crate::platform_impl::windows::WindowsWindowExt;
+
+                let origin = display.origin;
+                let size = display.size;
+                window.set_window_rect(origin.x, origin.y, size.width as _, size.height as _);
+            }
+
             CanvasView::new(cx, display.id)
         })
         .expect("Failed to open paint window")

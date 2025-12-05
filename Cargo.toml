@@ -22,6 +22,9 @@ version = "0.62"
 default-features = false
 features = ["Win32_UI_WindowsAndMessaging"]
 
+[target.'cfg(windows)'.build-dependencies]
+tauri-winres = "0.3.5"
+
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "0.6.3"
 
@@ -37,11 +40,17 @@ opt-level = "s"
 panic = "abort"
 strip = true
 
+[package.metadata.tauri-winres]
+OriginalFilename = "MONICA.EXE"
+ProductName = "Monica"
+LegalCopyright = "Copyright © 2025 Takagi Tasuku"
+FileDescription = "Simple, cross-platform on-screen annotation software"
+
 [package.metadata.bundle]
 name = "Monica"
 identifier = "jp.tasuren.monica"
 icon = ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png"]
-copyright = "(c) 2025 Takagi Tasuku"
+copyright = "Copyright © 2025 Takagi Tasuku"
 category = "Productivity"
 short_description = "Simple, cross-platform on-screen annotation software"
 long_description = """

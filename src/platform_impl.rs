@@ -74,7 +74,6 @@ pub mod windows {
     use raw_window_handle::{HasWindowHandle, RawWindowHandle};
     use windows::Win32::{
         Foundation::{HWND, RECT},
-        Graphics::Dwm::{DWMWA_EXTENDED_FRAME_BOUNDS, DwmGetWindowAttribute},
         UI::WindowsAndMessaging::*,
     };
 
@@ -137,21 +136,20 @@ pub mod windows {
             // doesn't make itself topmost. Then we do this ourselves.
             let hwnd = get_hwnd(self);
             set_always_on_top(hwnd);
-            
+
             // Set the window as no activate.
             manage_ex_style(hwnd, true, WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE);
-
-            // Hide on task-bar
-            manage_ex_style(hwnd, false, WS_EX_APPWINDOW);
         }
 
         fn setup_canvas_window(&self) {
             let hwnd = get_hwnd(self);
 
-            // Remove border and shadow
-            manage_style(hwnd, false, WS_BORDER);
+            // Remove border, shadow and other window features.
+            // If you set `WS_BORDER` to the window, then the window show the border and shadow.
+            unsafe {
+                _ = SetWindowLongPtrW(hwnd, GWL_STYLE, (WS_POPUP | WS_VISIBLE).0 as _);
+            };
 
-            manage_style(hwnd, true, WS_POPUP);
             manage_ex_style(
                 hwnd,
                 true,
@@ -190,23 +188,22 @@ pub mod windows {
                 let mut window_rect = RECT::default();
                 let mut client_rect = RECT::default();
 
-                _ = DwmGetWindowAttribute(
-                    hwnd,
-                    DWMWA_EXTENDED_FRAME_BOUNDS,
-                    &raw mut window_rect as _,
-                    std::mem::size_of::<RECT>() as _,
-                );
+                _ = GetWindowRect(hwnd, &raw mut window_rect);
                 _ = GetClientRect(hwnd, &raw mut client_rect);
 
-                let diff_x = (window_rect.right - window_rect.left) - client_rect.right;
-                let diff_y = (window_rect.bottom - window_rect.top) - client_rect.bottom;
+                let diff_x =
+                    (window_rect.right - window_rect.left) - (client_rect.right - client_rect.left);
+                let diff_y =
+                    (window_rect.bottom - window_rect.top) - (client_rect.bottom - client_rect.top);
+                let offset_x = diff_x / 2;
+                let offset_y = diff_y / 2;
 
                 // Set the window position and size without the invisible resize border.
                 _ = SetWindowPos(
                     hwnd,
                     None,
-                    x - diff_x,
-                    y - diff_y,
+                    x - offset_x,
+                    y - offset_y,
                     width + diff_x,
                     height + diff_y,
                     SWP_NOACTIVATE,

@@ -25,10 +25,7 @@ impl MainWindow {
             titlebar,
             window_bounds,
             is_resizable: false,
-            #[cfg(not(target_os = "windows"))]
             kind: gpui::WindowKind::PopUp,
-            #[cfg(target_os = "windows")]
-            kind: gpui::WindowKind::Floating, // to allow minimizing the window
             app_id: Some(crate::APP_IDENTIFIER.to_owned()),
             ..Default::default()
         };

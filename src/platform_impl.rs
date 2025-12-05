@@ -86,21 +86,6 @@ pub mod windows {
         }
     }
 
-    fn manage_style(hwnd: HWND, add_mode: bool, target_style: WINDOW_STYLE) {
-        let raw_style = unsafe { GetWindowLongPtrW(hwnd, GWL_STYLE) };
-        let mut style = WINDOW_STYLE(raw_style as _);
-
-        if add_mode {
-            style |= target_style;
-        } else {
-            style &= !target_style;
-        }
-
-        unsafe {
-            _ = SetWindowLongPtrW(hwnd, GWL_STYLE, style.0 as _);
-        };
-    }
-
     fn manage_ex_style(hwnd: HWND, add_mode: bool, target_ex_style: WINDOW_EX_STYLE) {
         let raw_ex_style = unsafe { GetWindowLongPtrW(hwnd, GWL_EXSTYLE) };
         let mut ex_style = WINDOW_EX_STYLE(raw_ex_style as _);

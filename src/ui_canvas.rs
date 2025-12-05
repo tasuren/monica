@@ -46,7 +46,7 @@ impl CanvasView {
         &self,
         cx: &mut App,
         orchestrator: &mut CanvasOrchestrator,
-        mut mouse_pos: Point<Pixels>,
+        mouse_pos: Point<Pixels>,
     ) {
         orchestrator.notify_old_working_canvas(cx, Some(&self.display_id));
 
@@ -54,6 +54,8 @@ impl CanvasView {
             orchestrator.update_canvas(cx, &self.display_id, |canvas, cx| {
                 #[cfg(target_os = "windows")]
                 {
+                    let mut mouse_pos = mouse_pos;
+                    
                     // Without offset, the cursor highlight get a little off.
                     const CURSOR_OFFSET_X: f32 = 5.;
                     const CURSOR_OFFSET_Y: f32 = 5.;

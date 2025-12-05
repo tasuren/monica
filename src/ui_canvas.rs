@@ -55,7 +55,7 @@ impl CanvasView {
                 #[cfg(target_os = "windows")]
                 {
                     let mut mouse_pos = mouse_pos;
-                    
+
                     // Without offset, the cursor highlight get a little off.
                     const CURSOR_OFFSET_X: f32 = 5.;
                     const CURSOR_OFFSET_Y: f32 = 5.;

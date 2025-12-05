@@ -165,6 +165,8 @@ pub struct Canvas {
 }
 
 impl Canvas {
+    pub const MAX_STACK_SIZE: usize = 1000;
+
     pub fn new() -> Self {
         Self {
             stack: VecDeque::new(),
@@ -241,12 +243,12 @@ impl Canvas {
             if state.tool == Tool::Eraser {
                 let mut eraser = CanvasEraser::new(px(20.));
                 eraser.draw(pos);
-                self.stack.push_back(CanvasAction::Erase(eraser));
+                self.push_action(CanvasAction::Erase(eraser));
             } else {
                 let color = state.color;
                 let mut path = CanvasPath::new(color);
                 path.draw(pos);
-                self.stack.push_back(CanvasAction::DrawLine(path));
+                self.push_action(CanvasAction::DrawLine(path));
             }
         } else {
             let maybe_action = self.stack.back_mut().unwrap();
@@ -257,6 +259,14 @@ impl Canvas {
                 _ => {}
             }
         }
+    }
+
+    fn push_action(&mut self, action: CanvasAction) {
+        if self.stack.len() >= Self::MAX_STACK_SIZE {
+            self.stack.pop_front();
+        }
+
+        self.stack.push_back(action);
     }
 
     pub fn is_painting(&self) -> bool {
@@ -274,7 +284,7 @@ impl Canvas {
 
     pub fn clear(&mut self) {
         self.painting = false;
-        self.stack.push_back(CanvasAction::Clear);
+        self.push_action(CanvasAction::Clear);
     }
 
     pub fn set_highlight(&mut self, pos: Point<Pixels>) {

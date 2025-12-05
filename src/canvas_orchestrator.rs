@@ -19,6 +19,8 @@ pub struct CanvasOrchestrator {
 impl Global for CanvasOrchestrator {}
 
 impl CanvasOrchestrator {
+    pub const MAX_ACTION_HISTORY: usize = 100;
+
     pub fn register_global(cx: &mut App) {
         let orchestrator = Self {
             canvases: HashMap::new(),
@@ -67,7 +69,7 @@ impl CanvasOrchestrator {
             });
         }
 
-        self.action_history.push_back(ActionScope::All);
+        self.push_history(ActionScope::All);
     }
 
     pub fn action_canvas(
@@ -80,10 +82,17 @@ impl CanvasOrchestrator {
             let action = canvas.update(cx, f);
 
             if action {
-                self.action_history
-                    .push_back(ActionScope::Display(display_id));
+                self.push_history(ActionScope::Display(display_id));
             }
         }
+    }
+
+    fn push_history(&mut self, scope: ActionScope) {
+        if self.action_history.len() >= Self::MAX_ACTION_HISTORY {
+            self.action_history.pop_front();
+        }
+
+        self.action_history.push_back(scope);
     }
 
     pub fn update_canvas(

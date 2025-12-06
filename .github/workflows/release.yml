@@ -56,7 +56,8 @@ jobs:
       - name: Package (macOS)
         if: runner.os == 'macOS'
         run: |
-          tar -czf Monica-${{ matrix.arch }}-macos.app.tar.gz target/${{ matrix.target }}/release/bundle/osx/Monica.app
+          cd target/${{ matrix.target }}/release/bundle/osx
+          tar -czf ../../../../../Monica-${{ matrix.arch }}-macos.app.tar.gz Monica.app
 
       # --- Windows Steps ---
       - name: Build Release (Windows)

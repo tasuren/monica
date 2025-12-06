@@ -3,6 +3,9 @@ name = "monica"
 version = "1.0.0"
 edition = "2024"
 license = "GPL-3.0-or-later"
+authors = ["Takagi Tasuku <tasuren@outlook.jp>"]
+repository = "https://github.com/tasuren/monica"
+keywords = ["software"]
 
 [dependencies]
 gpui = "0.2.2"

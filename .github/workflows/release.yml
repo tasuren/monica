@@ -56,8 +56,7 @@ jobs:
       - name: Package (macOS)
         if: runner.os == 'macOS'
         run: |
-          cd target/${{ matrix.target }}/release/bundle/osx
-          tar -czf ../../../../../Monica-${{ matrix.arch }}.app.tar.gz Monica.app
+          tar -czf Monica-${{ matrix.arch }}-macos.app.tar.gz target/${{ matrix.target }}/release/bundle/osx/Monica.app
 
       # --- Windows Steps ---
       - name: Build Release (Windows)
@@ -69,7 +68,7 @@ jobs:
         shell: pwsh
         run: |
           $ver = "${{ env.VERSION }}"
-          Compress-Archive -Path "target\${{ matrix.target }}\release\monica.exe", "LICENSE" -DestinationPath "Monica-v$ver-${{ matrix.arch }}-windows-portable.zip"
+          Compress-Archive -Path "target\${{ matrix.target }}\release\monica.exe", "LICENSE" -DestinationPath "Monica-${{ matrix.arch }}-windows-portable.zip"
 
       - name: Build Installer (Windows)
         if: runner.os == 'Windows'
@@ -90,7 +89,7 @@ jobs:
         with:
           name: artifacts-${{ matrix.arch }}-${{ matrix.platform }}
           path: |
-            Monica-*.app.tar.gz
+            Monica-*-macos.app.tar.gz
             Monica-*-windows-portable.zip
             Monica-*-windows-setup.exe
           if-no-files-found: ignore

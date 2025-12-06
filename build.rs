@@ -1,7 +1,7 @@
 #[cfg(windows)]
 fn main() {
     let mut res = tauri_winres::WindowsResource::new();
-    res.set_icon("icons/Monica.png");
+    res.set_icon("icons/Monica.ico");
     res.compile().unwrap();
 }
 

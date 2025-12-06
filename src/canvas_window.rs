@@ -1,7 +1,8 @@
 use display_config::{Display, DisplayId};
-use gpui::{AnyWindowHandle, App, Entity};
+use gpui::{AnyWindowHandle, App, Entity, ReadGlobal};
 
 use crate::{
+    canvas::ToolState,
     platform_impl::WindowExt,
     ui_canvas::CanvasView,
     utils::{self, dpi_size_to_gpui},
@@ -49,6 +50,10 @@ impl CanvasWindow {
         let handle = *cx
             .open_window(window_options, |window, cx| {
                 window.setup_canvas_window();
+
+                if !ToolState::global(cx).tool().is_canvas_related() {
+                    window.set_ignore_cursor_events(true);
+                };
 
                 #[cfg(target_os = "windows")]
                 {

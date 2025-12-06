@@ -26,9 +26,9 @@ const APP_IDENTIFIER: &str = "jp.tasuren.monica";
 fn setup(cx: &mut App) {
     gpui_component::init(cx);
 
+    ToolState::register_global(cx, Tool::Cursor, gpui::blue());
     CanvasOrchestrator::register_global(cx);
     CanvasWindowManager::register_global(cx);
-    ToolState::register_global(cx, Tool::Cursor, gpui::blue());
     MainWindow::register_global(cx);
 
     // Quit the application when main window is closed.

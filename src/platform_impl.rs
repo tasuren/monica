@@ -38,8 +38,6 @@ pub mod macos {
         fn setup_canvas_window(&self) {
             let ns_window = get_ns_window(self);
 
-            ns_window.setIgnoresMouseEvents(true);
-
             ns_window.setLevel(CANVAS_WINDOW_LEVEL);
             ns_window.setCollectionBehavior(
                 NSWindowCollectionBehavior::CanJoinAllApplications
@@ -135,12 +133,7 @@ pub mod windows {
                 _ = SetWindowLongPtrW(hwnd, GWL_STYLE, (WS_POPUP | WS_VISIBLE).0 as _);
             };
 
-            manage_ex_style(
-                hwnd,
-                true,
-                WS_EX_NOACTIVATE | WS_EX_TRANSPARENT | WS_EX_LAYERED,
-            );
-
+            manage_ex_style(hwnd, true, WS_EX_NOACTIVATE);
             set_always_on_top(hwnd);
         }
 

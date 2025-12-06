@@ -82,7 +82,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-           Move-Item -Path "target\release\bundle\monica-setup.exe" -Destination "Monica-${{ matrix.arch }}-windows-setup.exe"
+          Move-Item -Path "target\release\bundle\monica-setup.exe" -Destination "Monica-${{ matrix.arch }}-windows-setup.exe"
 
       # --- Upload Artifacts ---
       - name: Upload Artifacts

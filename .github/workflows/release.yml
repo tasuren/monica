@@ -1,4 +1,4 @@
-name: 'publish'
+name: "Release"
 
 on:
   workflow_dispatch:
@@ -7,59 +7,120 @@ on:
       - release
 
 jobs:
-  publish-tauri:
-    permissions:
-      contents: write
+  build:
+    name: Build ${{ matrix.platform }} ${{ matrix.arch }}
+    runs-on: ${{ matrix.platform }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest' # for Arm based macs (M1 and above).
-            args: '--target aarch64-apple-darwin'
-          - platform: 'macos-latest' # for Intel based macs.
-            args: '--target x86_64-apple-darwin'
-          - platform: 'ubuntu-22.04'
-            args: ''
-          - platform: 'windows-latest'
-            args: ''
+          - platform: "macos-latest"
+            target: "aarch64-apple-darwin"
+            arch: "aarch64"
+          - platform: "macos-latest"
+            target: "x86_64-apple-darwin"
+            arch: "x86_64"
+          - platform: "windows-latest"
+            target: "x86_64-pc-windows-msvc"
+            arch: "x86_64"
+            iss_args: "/DMyArchitecturesAllowed=x64compatible /DMyArchitecturesInstallIn64BitMode=x64compatible"
+          - platform: "windows-latest"
+            target: "aarch64-pc-windows-msvc"
+            arch: "aarch64"
+            iss_args: "/DMyArchitecturesAllowed=arm64 /DMyArchitecturesInstallIn64BitMode=arm64"
 
-    runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-
-      - name: setup bun
-        uses: oven-sh/setup-bun@v2
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
         with:
-          bun-version: latest
+          targets: ${{ matrix.target }}
 
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable # Set this to dtolnay/rust-toolchain@nightly
-        with:
-          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
-
-      - name: Rust cache
+      - name: Rust Cache
         uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './src-tauri -> target'
 
-      - name: install frontend dependencies
-        # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
-        run: bun install
+      - name: Get version
+        shell: bash
+        run: echo "VERSION=$(grep '^version =' Cargo.toml | head -n 1 | awk '{print $3}' | tr -d '"')" >> $GITHUB_ENV
 
-      - uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # --- macOS Steps ---
+      - name: Install cargo-bundle (macOS)
+        if: runner.os == 'macOS'
+        run: cargo install cargo-bundle
+
+      - name: Build and Bundle (macOS)
+        if: runner.os == 'macOS'
+        run: cargo bundle --release --target ${{ matrix.target }}
+
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cd target/${{ matrix.target }}/release/bundle/osx
+          tar -czf ../../../../../Monica-${{ matrix.arch }}.app.tar.gz Monica.app
+
+      # --- Windows Steps ---
+      - name: Build Release (Windows)
+        if: runner.os == 'Windows'
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Create Portable Zip (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ver = "${{ env.VERSION }}"
+          Compress-Archive -Path "target\${{ matrix.target }}\release\monica.exe", "LICENSE" -DestinationPath "Monica-v$ver-${{ matrix.arch }}-windows-portable.zip"
+
+      - name: Build Installer (Windows)
+        if: runner.os == 'Windows'
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
         with:
-          tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
-          releaseName: 'Monica v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: true
-          prerelease: false
-          args: ${{ matrix.args }}
+          path: windows-installer.iss
+          options: /O+ /DMyAppVersion=${{ env.VERSION }} /DMyAppBuildDir=target\${{ matrix.target }}\release ${{ matrix.iss_args }}
+
+      - name: Rename Installer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+           Move-Item -Path "target\release\bundle\monica-setup.exe" -Destination "Monica-${{ matrix.arch }}-windows-setup.exe"
+
+      # --- Upload Artifacts ---
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ matrix.arch }}-${{ matrix.platform }}
+          path: |
+            Monica-*.app.tar.gz
+            Monica-*-windows-portable.zip
+            Monica-*-windows-setup.exe
+          if-no-files-found: ignore
+
+  create-release:
+    name: Create Draft Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        run: echo "VERSION=$(grep '^version =' Cargo.toml | head -n 1 | awk '{print $3}' | tr -d '"')" >> $GITHUB_ENV
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: artifacts-*
+          merge-multiple: true
+          path: assets
+
+      - name: List assets
+        run: ls -R assets
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: Monica v${{ env.VERSION }}
+          draft: true
+          files: assets/*

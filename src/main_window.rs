@@ -1,4 +1,4 @@
-use gpui::{AnyWindowHandle, App, AppContext, Global, px, size};
+use gpui::{AnyWindowHandle, App, AppContext, Global, point, px, size};
 
 use crate::platform_impl::WindowExt;
 
@@ -16,7 +16,7 @@ impl MainWindow {
         let titlebar = Some(gpui::TitlebarOptions {
             title: Some("Monica - Controller".into()),
             appears_transparent: true,
-            ..Default::default()
+            traffic_light_position: Some(point(px(12.), px(12.))),
         });
         let bounds = gpui::Bounds::centered(None, size(px(230.), px(100.)), cx);
         let window_bounds = Some(gpui::WindowBounds::Windowed(bounds));

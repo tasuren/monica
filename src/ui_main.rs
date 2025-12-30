@@ -54,7 +54,7 @@ impl TitleBar {
         Button::new(id)
             .icon(Icon::empty().path(icon_path))
             .ghost()
-            .custom(ButtonCustomVariant::new(cx).active(gpui::white().alpha(0.3)))
+            .custom(ButtonCustomVariant::new(cx).active(cx.theme().foreground.alpha(0.2)))
             .size_7()
             .with_size(px(32.))
     }
@@ -146,7 +146,7 @@ impl ToolSelect {
         Button::new(id)
             .icon(Icon::empty().path(icon_path))
             .ghost()
-            .custom(ButtonCustomVariant::new(cx).active(gpui::white().alpha(0.3)))
+            .custom(ButtonCustomVariant::new(cx).active(cx.theme().foreground.alpha(0.2)))
             .size_10()
             .with_size(px(36.))
             .selected(tool == ToolState::global(cx).tool())

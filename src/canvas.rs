@@ -290,4 +290,8 @@ impl Canvas {
     pub fn set_highlight(&mut self, pos: Point<Pixels>) {
         self.highlight_pos = Some(pos);
     }
+
+    pub fn clear_highlight(&mut self) {
+        self.highlight_pos = None;
+    }
 }

@@ -121,17 +121,21 @@ impl CanvasOrchestrator {
                 let old_display_id = std::mem::replace(display_id, new_display_id.clone());
 
                 if let Some(old_canvas) = self.canvases.get(&old_display_id) {
-                    cx.notify(old_canvas.entity_id());
+                    old_canvas.update(cx, |canvas, cx| {
+                        canvas.clear_highlight();
+                        cx.notify();
+                    });
                 }
             }
-        } else if let Some(canvas) = self
-            .cursor_display_pos
-            .take()
-            .and_then(|display_id| self.canvases.get(&display_id))
-        {
-            // When moving outside the canvas window,
-            // redraw the canvas to prevent highlights or other elements from remaining.
-            cx.notify(canvas.entity_id());
+        } else if let Some(display_id) = self.cursor_display_pos.take() {
+            // When moving outside the canvas window (e.g., over MainWindow),
+            // clear the highlight to prevent it from remaining visible.
+            if let Some(canvas) = self.canvases.get(&display_id) {
+                canvas.update(cx, |canvas, cx| {
+                    canvas.clear_highlight();
+                    cx.notify();
+                });
+            }
         }
     }
 }

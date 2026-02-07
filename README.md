@@ -7,7 +7,7 @@ Enhance your presentations, online meetings, and educational content by easily a
 - **Cross-platform** — It supports Windows and macOS. Also it will supports Linux (WIP).
 - **High Portability** — The executable file is under 10MB, making it easy to carry around on a USB drive.
 
-This application was developed with Rust and [gpui](https://www.gpui.rs/) library.
+This application was developed with Rust and [GPUI](https://www.gpui.rs/) library.
 
 <img width="448" alt="Monica screenshot" src="https://github.com/user-attachments/assets/3fa98f98-530c-4c46-8220-a6772dc8733f" />
 
@@ -21,3 +21,4 @@ On macOS, if you can't open the app like this, you can pass this by `xattr -cr "
 ## License
 
 This project is licensed under the GPL 3.0 or later License.
+

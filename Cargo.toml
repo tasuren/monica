@@ -12,7 +12,7 @@ gpui = "0.2.2"
 gpui-component = "0.5.1"
 rust-embed = "8.11"
 raw-window-handle = "0.6"
-display-config = { git = "https://github.com/tasuren/display-config-rs.git" }
+display-config = "0.1.0"
 dpi = "0.1"
 async-channel = "2.5"
 anyhow = "1.0"

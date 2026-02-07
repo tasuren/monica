@@ -2224,13 +2224,14 @@ dependencies = [
 
 [[package]]
 name = "gpui-component"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2dda822a7bab4e0a08a4276ba68e2f82cc5855bf0b377d7b195c58c8061dc7d1"
+checksum = "d021d46b4088d3d93a57ccdf443da85695a77272108caca2f6fe5369f584966a"
 dependencies = [
  "aho-corasick",
  "anyhow",
  "chrono",
+ "core-text",
  "enum-iterator",
  "gpui",
  "gpui-component-macros",
@@ -2263,9 +2264,9 @@ dependencies = [
 
 [[package]]
 name = "gpui-component-macros"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "581a8cd1e38b2fd86d1029dd56a3296ffd1388fda295054104d89923755de902"
+checksum = "86fbc2d84bf91717b171320e6adc600d91ccb3ed259448f3b006787633c1c615"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4690,9 +4691,9 @@ checksum = "6c20b6793b5c2fa6553b250154b78d6d0db37e72700ae35fad9387a46f487c97"
 
 [[package]]
 name = "rust-embed"
-version = "8.9.0"
+version = "8.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "947d7f3fad52b283d261c4c99a084937e2fe492248cb9a68a8435a861b8798ca"
+checksum = "04113cb9355a377d83f06ef1f0a45b8ab8cd7d8b1288160717d66df5c7988d27"
 dependencies = [
  "rust-embed-impl",
  "rust-embed-utils",

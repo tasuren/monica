@@ -11,7 +11,9 @@ pub trait WindowExt {
 #[cfg(target_os = "macos")]
 pub mod macos {
     use objc2::rc::Retained;
-    use objc2_app_kit::{NSColor, NSView, NSWindow, NSWindowCollectionBehavior, NSWindowLevel};
+    use objc2_app_kit::{
+        NSColor, NSView, NSWindow, NSWindowCollectionBehavior, NSWindowLevel, NSWindowStyleMask,
+    };
     use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 
     fn get_ns_window(window: &gpui::Window) -> Retained<NSWindow> {
@@ -44,11 +46,20 @@ pub mod macos {
                     | NSWindowCollectionBehavior::CanJoinAllSpaces
                     | NSWindowCollectionBehavior::FullScreenAuxiliary,
             );
-            ns_window.setMovable(false);
 
-            // Remove border and shadow.
-            ns_window.setOpaque(false);
-            ns_window.setBackgroundColor(Some(&NSColor::clearColor()));
+            // Allow window to be positioned above the menu bar.
+            ns_window.setStyleMask(
+                NSWindowStyleMask::Borderless
+                    | NSWindowStyleMask::NonactivatingPanel
+                    | NSWindowStyleMask::FullSizeContentView,
+            );
+            // Since it can now be placed above the menu bar,
+            // reposition the window precisely in the top-left corner of the screen.
+            let screen_frame = ns_window.screen().expect("Failed to get screen").frame();
+            let mut window_pos = screen_frame.origin;
+            // `setFrameTopLeftPoint:` requires the bottom-left corner coordinate system.
+            window_pos.y += screen_frame.size.height;
+            ns_window.setFrameTopLeftPoint(window_pos);
         }
 
         fn set_hidden(&self, hidden: bool) {

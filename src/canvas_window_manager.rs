@@ -86,6 +86,7 @@ impl CanvasWindowManager {
                 }
                 DisplayEvent::Removed(display_id) => {
                     if let Some(window) = this.windows.remove(&display_id) {
+                        window.set_hidden(cx, true);
                         window.close(cx);
                     }
                 }

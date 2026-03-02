@@ -1355,8 +1355,9 @@ dependencies = [
 
 [[package]]
 name = "display-config"
-version = "0.1.0"
-source = "git+https://github.com/tasuren/display-config-rs.git#53bdd38bb21ed3a1a9426a4e5b46d8f595f9f8f5"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "085f204b8b75a3eb2503718e274474de34787303e6b8f5280628d9576d73fe52"
 dependencies = [
  "dpi",
  "objc2",
@@ -3435,7 +3436,7 @@ dependencies = [
 
 [[package]]
 name = "monica"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "async-channel 2.5.0",

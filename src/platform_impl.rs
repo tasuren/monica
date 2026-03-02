@@ -12,7 +12,7 @@ pub trait WindowExt {
 pub mod macos {
     use objc2::rc::Retained;
     use objc2_app_kit::{
-        NSColor, NSView, NSWindow, NSWindowCollectionBehavior, NSWindowLevel, NSWindowStyleMask,
+        NSView, NSWindow, NSWindowCollectionBehavior, NSWindowLevel, NSWindowStyleMask,
     };
     use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 
@@ -44,15 +44,18 @@ pub mod macos {
             ns_window.setCollectionBehavior(
                 NSWindowCollectionBehavior::CanJoinAllApplications
                     | NSWindowCollectionBehavior::CanJoinAllSpaces
-                    | NSWindowCollectionBehavior::FullScreenAuxiliary,
+                    | NSWindowCollectionBehavior::FullScreenAuxiliary
+                    | NSWindowCollectionBehavior::IgnoresCycle,
             );
+            ns_window.setHasShadow(false);
 
-            // Allow window to be positioned above the menu bar.
+            // Allow window to be positioned above the menu bar by `Borderless`.
             ns_window.setStyleMask(
                 NSWindowStyleMask::Borderless
                     | NSWindowStyleMask::NonactivatingPanel
                     | NSWindowStyleMask::FullSizeContentView,
             );
+
             // Since it can now be placed above the menu bar,
             // reposition the window precisely in the top-left corner of the screen.
             let screen_frame = ns_window.screen().expect("Failed to get screen").frame();
